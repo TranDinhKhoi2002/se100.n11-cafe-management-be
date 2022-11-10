@@ -112,3 +112,21 @@ exports.getTables = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getTableById = async (req, res, next) => {
+  const tableId = req.params.tableId;
+  try {
+    const _table = await Table.findById(tableId).populate("receipt");
+    if (!_table) {
+      const error = new Error("Bàn không tồn tại");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    res.status(200).json({ table: _table });
+  } catch (err) {
+    const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+    error.statusCode = 500;
+    next(error);
+  }
+};
