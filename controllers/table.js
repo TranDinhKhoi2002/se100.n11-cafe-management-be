@@ -15,8 +15,8 @@ exports.createTable = async (req, res, next) => {
   const { name } = req.body;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
-      const error = new Error("Chỉ có chủ quán hoặc hquản lý mới được thêm bàn");
+    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm bàn");
       error.statusCode = 401;
       return next(error);
     }
@@ -69,8 +69,8 @@ exports.updateTable = async (req, res, next) => {
 exports.deleteTable = async (req, res, next) => {
   const tableId = req.params.tableId;
   try {
-    if (role != "Chủ quán" && role != "Quản lý") {
-      const error = new Error("Chỉ có chủ quán hoặc hquản lý mới được xóa bàn");
+    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa bàn");
       error.statusCode = 401;
       return next(error);
     }
@@ -99,11 +99,6 @@ exports.deleteTable = async (req, res, next) => {
 exports.getTables = async (req, res, next) => {
   try {
     const tables = await Table.find().populate("receipt");
-    if (!tables) {
-      const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
-      error.statusCode = 404;
-      return next(error);
-    }
 
     res.status(200).json({ tables });
   } catch (err) {

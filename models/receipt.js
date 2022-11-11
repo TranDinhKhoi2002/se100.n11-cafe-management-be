@@ -32,7 +32,7 @@ const receiptSchema = new Schema({
       "Chưa thanh toán",
       "Đã thanh toán",
     ],
-    required: true,
+    default: "Chưa thanh toán",
   }
 });
 

@@ -21,11 +21,11 @@ const productSchema = new Schema({
   },
   soldInDay: {
     type: Number,
-    required: true,
+    default: 0,
   },
   soldInMonth: {
     type: Number,
-    required: true,
+    default: 0,
   }
 });
 
