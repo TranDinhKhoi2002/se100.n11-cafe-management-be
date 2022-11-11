@@ -16,7 +16,7 @@ const tableSchema = new Schema({
         "Còn trống",
         "Đang dùng",
     ],
-    required: true,
+    default: "Còn trống",
   }
 });
 
