@@ -19,13 +19,13 @@ const productSchema = new Schema({
     type: Number,
     required: true,
   },
-  soldInDay: {
-    type: Number,
-    default: 0,
-  },
-  soldInMonth: {
-    type: Number,
-    default: 0,
+  state: {
+    type: String,
+    required: true,
+    enum: [
+      "Đang bán",
+      "Đã nghỉ"
+    ]
   }
 });
 

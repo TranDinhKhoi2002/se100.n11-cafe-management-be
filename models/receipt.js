@@ -2,11 +2,15 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const receiptSchema = new Schema({
-  table: {
-    type: Schema.Types.ObjectId,
-    ref: "Table",
-    required: true,
-  },
+  tables: [
+    {
+      tableId: {
+        type: Schema.Types.ObjectId,
+        ref: "Table",
+        required: true,
+      }
+    }
+  ],
   products: [
     {
         product: {
@@ -14,7 +18,7 @@ const receiptSchema = new Schema({
             ref: "Product",
             required: true,
         },
-        productName: {
+        name: {
             type: String
         },
         price: {
@@ -26,14 +30,19 @@ const receiptSchema = new Schema({
         }
     }
   ],
+  totalPrice: {
+    type: Number,
+    required: true,
+  },
   state: {
     type: String,
     enum: [
       "Chưa thanh toán",
       "Đã thanh toán",
+      "Đã Huỷ"
     ],
     default: "Chưa thanh toán",
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Receipt", receiptSchema);
