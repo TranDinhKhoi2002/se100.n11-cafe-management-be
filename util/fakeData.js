@@ -4,7 +4,6 @@ const { sample, sum } = require("lodash");
 
 const Account = require("../models/account");
 const Category = require("../models/category");
-const product = require("../models/product");
 const Product = require("../models/product");
 const Receipt = require("../models/receipt");
 const Role = require("../models/role");
@@ -13,7 +12,7 @@ const User = require("../models/user");
 
 exports.generateFakeData = async () => {
   const roles = [];
-  ["Chủ quán", "Quản lý", "Nhân viên"].forEach(async (roleName) => {
+  ["Chủ quán", "Quản lý", "Nhân viên"].forEach(async (roleName) => { 
     const role = new Role({
       name: roleName,
       _id: faker.database.mongodbObjectId(),
@@ -27,7 +26,7 @@ exports.generateFakeData = async () => {
       password: bcryptjs.hashSync("111111", 12),
     });
     await account0.save();
-
+ 
     const user0 = new User({
       role: roles[0]._id,
       account: account0._id,
@@ -131,71 +130,35 @@ const categories = [];
     await table.save();
   }
 
-  const receipts = []
   for(let i=0; i<2; i++){
-    const productsInfo = []
+    var total = 0;
+    const _tables = [{tableId: tables[i]._id}];
+    const productsInReceipt = [];
     for(let j=0; j<3; j++){
-      products.push({
-        product: products[faker.datatype.number({min: 0, max: 7})]._id,
-        productName: product.name,
-        price: product.price,
-        quantity: faker.datatype.number({min: 1, max: 3})
-      })
+      var _product;
+      _product.product = products[i+j]._id;
+      _product.name = products[i+j].name;
+      _product.price = products[i+j].price;
+      _product.quantity = faker.datatype.number({min: 1, max: 3});
+      total = total + _product.price * _product.quantity;
+      productsInReceipt.push(_product);
     }
     const receipt = new Receipt({
-      table: tables[i]._id,
-      products: 
+      tables: _tables,
+      products: productsInReceipt,
+      totalPrice: total,
+      _id: faker.database.mongodbObjectId()
     })
+    await receipt.save();
   }
+};
 
-    const grade = grades[faker.datatype.number({ min: 0, max: 2 })];
-    const schoolYear = faker.datatype.number({
-      min: 2015,
-      max: new Date().getFullYear(),
-    });
-    const _class = new Class({
-      grade: grade._id,
-      teacher: teacher._id,
-      name: grade.name + "A" + faker.datatype.number({ min: 1, max: 8 }),
-      schoolYear: schoolYear,
-      semester: semesters[faker.datatype.number({ min: 0, max: 1 })],
-      students: studentIds,
-      _id: classId,
-    });
-    await _class.save();
-
-    [...Array(20)].forEach(async (_, index) => {
-      let semesterId = semesters[0]._id;
-      if (index >= 10) {
-        semesterId = semesters[1]._id;
-      }
-
-      const classScore = new ClassScore({
-        class: _class._id,
-        subject: index >= 10 ? subjects[index - 10]._id : subjects[index]._id,
-        semester: semesterId,
-        schoolYear: schoolYear,
-        studentScores: [],
-      });
-      await classScore.save();
-
-      const studentScoreIds = [];
-      studentIds.forEach(async (id) => {
-        const studentScore = new StudentScore({
-          student: id,
-          classScore: classScore._id,
-          scores: {
-            oral: [...Array(5)].map((_) => faker.datatype.float({ min: 0, max: 10, precision: 0.25 })),
-            m15: [...Array(5)].map((_) => faker.datatype.float({ min: 0, max: 10, precision: 0.25 })),
-            m45: [...Array(3)].map((_) => faker.datatype.float({ min: 0, max: 10, precision: 0.25 })),
-            final: faker.datatype.float({ min: 0, max: 10, precision: 0.25 }),
-          },
-        });
-        studentScoreIds.push(studentScore._id);
-        await studentScore.save();
-      });
-
-      classScore.studentScores = studentScoreIds;
-      await classScore.save();
-    });
-  }
+exports.removeAllData = async () => {
+  await Receipt.deleteMany();
+  await Table.deleteMany();
+  await Product.deleteMany();
+  await Category.deleteMany();
+  await User.deleteMany();
+  await Account.deleteMany();
+  await Role.deleteMany();
+};
