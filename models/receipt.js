@@ -42,6 +42,11 @@ const receiptSchema = new Schema({
       "Đã Huỷ"
     ],
     default: "Chưa thanh toán",
+  },
+  accountId: {
+    type: Schema.Types.ObjectId,
+    ref: "Account",
+    required: true
   }
 }, { timestamps: true });
 
