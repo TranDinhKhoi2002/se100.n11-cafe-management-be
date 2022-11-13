@@ -49,15 +49,15 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ message, data, validationErrors });
 });
 
+const { generateFakeData, removeAllData } = require("./util/fakeData");
+// removeAllData();
+generateFakeData();
+
 mongoose
   .connect(
     `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.s3wcnob.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`
   )
   .then((result) => {
-    // https
-    //   .createServer({ key: privateKey, cert: certificate }, app)
-    //   .listen(process.env.PORT || 3000);
-
     app.listen(process.env.PORT || 3000);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => console.log(err)); 

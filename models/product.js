@@ -21,11 +21,11 @@ const productSchema = new Schema({
   },
   state: {
     type: String,
-    required: true,
     enum: [
       "Đang bán",
       "Đã nghỉ"
-    ]
+    ],
+    default: "Đang bán",
   }
 });
 
