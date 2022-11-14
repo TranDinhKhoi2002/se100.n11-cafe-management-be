@@ -47,7 +47,7 @@ exports.generateFakeData = async () => {
 
     const user1 = new User({
       role: roles[1]._id,
-      account: account0._id,
+      account: account1._id,
       name: faker.name.fullName(),
       address: faker.address.street() + " " + faker.address.city(),
       email: faker.internet.email(),
@@ -56,7 +56,7 @@ exports.generateFakeData = async () => {
       birthday: faker.date.birthdate({ min: 1975, max: 2000, mode: "year" }),
     });
     await user1.save();
-
+  const staffs = []
   for (let i = 0; i < 5; i++) {
     const account = new Account({
       username: faker.internet.userName(),
@@ -74,6 +74,7 @@ exports.generateFakeData = async () => {
       gender: sample(["Nam", "Nữ"]),
       birthday: faker.date.birthdate({ min: 1985, max: 2004, mode: "year" }),
     });
+    staffs.push(user);
     await user.save();
 }
 const categories = [];
@@ -85,7 +86,7 @@ const categories = [];
     categories.push(category);
     await category.save();
   });
-  const products = []
+  const products = [];
   ["Cà phê đen", "Cà phê sữa", "Bạc xỉu"].forEach(async (productName) => {
     const product = new Product({
       category: categories[0]._id,
@@ -93,10 +94,10 @@ const categories = [];
       image: faker.image.food(),
       price: faker.datatype.number({min: 20, max: 35})*1000,
       _id: faker.database.mongodbObjectId()
-    })
+    });
     products.push(product);
     await product.save();
-  })
+  });
   ["Bánh flan", "Kem trái cây tươi"].forEach(async (productName) => {
     const product = new Product({
       category: categories[1]._id,
@@ -104,10 +105,10 @@ const categories = [];
       image: faker.image.food(),
       price: faker.datatype.number({min: 20, max: 35})*1000,
       _id: faker.database.mongodbObjectId()
-    })
+    });
     products.push(product);
     await product.save();
-  })
+  });
   ["Trà sữa", "Pepsi", "Cacao"].forEach(async (productName) => {
     const product = new Product({
       category: categories[2]._id,
@@ -115,15 +116,19 @@ const categories = [];
       image: faker.image.food(),
       price: faker.datatype.number({min: 20, max: 35})*1000,
       _id: faker.database.mongodbObjectId()
-    })
+    });
     products.push(product);
     await product.save();
   })
 
   const tables = []
   for(let i=1; i<=10; i++){
+    var state1;
+    if(i<3) state1 = "Đang dùng"
+    else state1 = "Còn trống"
     const table = new Table({
       name: `Bàn ${i}`,
+      state: state1,
       _id: faker.database.mongodbObjectId(),
     });
     tables.push(table);
@@ -132,10 +137,11 @@ const categories = [];
 
   for(let i=0; i<2; i++){
     var total = 0;
-    const _tables = [{tableId: tables[i]._id}];
+    const _tables = [tables[i]._id];
+    tables[i].state = "Đang dùng";
     const productsInReceipt = [];
     for(let j=0; j<3; j++){
-      var _product;
+      var _product = {};
       _product.product = products[i+j]._id;
       _product.name = products[i+j].name;
       _product.price = products[i+j].price;
@@ -147,6 +153,7 @@ const categories = [];
       tables: _tables,
       products: productsInReceipt,
       totalPrice: total,
+      accountId: staffs[faker.datatype.number({min: 0, max: 4})].account,
       _id: faker.database.mongodbObjectId()
     })
     await receipt.save();
