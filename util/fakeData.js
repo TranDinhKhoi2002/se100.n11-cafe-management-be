@@ -21,6 +21,24 @@ exports.generateFakeData = async () => {
     await role.save();
   });
 
+  const accountcustom = new Account({
+      username: "phuquang147",
+      password: bcryptjs.hashSync("111111", 12),
+    });
+    await accountcustom.save();
+ 
+    const usercustom = new User({
+      role: roles[2]._id,
+      account: accountcustom._id,
+      name: "Phú Quang",
+      address: faker.address.street() + " " + faker.address.city(),
+      email: "phuquang14722@gmail.com",
+      phone: faker.phone.number("03########"),
+      gender: sample(["Nam", "Nữ"]),
+      birthday: faker.date.birthdate({ min: 1970, max: 1997, mode: "year" }),
+    });
+    await usercustom.save();
+
     const account0 = new Account({
       username: faker.internet.userName(),
       password: bcryptjs.hashSync("111111", 12),
