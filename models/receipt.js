@@ -3,13 +3,11 @@ const Schema = mongoose.Schema;
 
 const receiptSchema = new Schema({
   tables: [
-    {
-      tableId: {
+      {
         type: Schema.Types.ObjectId,
         ref: "Table",
         required: true,
       }
-    }
   ],
   products: [
     {
