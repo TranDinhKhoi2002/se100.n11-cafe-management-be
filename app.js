@@ -55,7 +55,7 @@ app.use((err, req, res, next) => {
 
 mongoose
   .connect(
-    `mongodb+srv://dinhnghia:SDEcPc5R2J86Zspq@cluster0.s3wcnob.mongodb.net/coffee-app?retryWrites=true&w=majority`
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.s3wcnob.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`
   )
   .then((result) => {
     app.listen(process.env.PORT || 3001);
