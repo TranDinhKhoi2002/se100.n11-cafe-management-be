@@ -15,7 +15,7 @@ exports.createTable = async (req, res, next) => {
   const { name } = req.body;
   try {
     const role = await getRole(req.accountId);
-    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+    if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm bàn");
       error.statusCode = 401;
       return next(error);
@@ -69,7 +69,7 @@ exports.updateTable = async (req, res, next) => {
 exports.deleteTable = async (req, res, next) => {
   const tableId = req.params.tableId;
   try {
-    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+    if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa bàn");
       error.statusCode = 401;
       return next(error);

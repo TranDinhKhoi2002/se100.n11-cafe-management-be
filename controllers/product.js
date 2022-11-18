@@ -16,7 +16,7 @@ exports.createProduct = async (req, res, next) => {
   const { category, name, image, price } = req.body;
   try {
     const role = await getRole(req.accountId);
-    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+    if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm sản phẩm");
       error.statusCode = 401;
       return next(error);
@@ -51,7 +51,7 @@ exports.updateProduct = async (req, res, next) => {
   const productId = req.params.productId;
   try {
     const role = await getRole(req.accountId);
-    if (role.name != "Chủ quán" && role.name != "Quản lý") {
+    if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa sản phẩm");
       error.statusCode = 401;
       return next(error);
