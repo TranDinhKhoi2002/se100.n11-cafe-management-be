@@ -53,15 +53,8 @@ exports.updateTable = async (req, res, next) => {
       error.statusCode = 404;
       return next(error);
     }
-    currentTable.name = name;
-    currentTable.state = state;
 
-    if (state == "Còn trống") {
-      const currentReceipt = await Receipt.findById(currentTable.receipt);
-      currentReceipt.tables.pull(tableId);
-      await currentReceipt.save();
-      currentTable.receipt = undefined;
-    }
+    currentTable.name = name;
     await currentTable.save();
 
     res.status(201).json({ message: "Cập nhật bàn thành công" });
