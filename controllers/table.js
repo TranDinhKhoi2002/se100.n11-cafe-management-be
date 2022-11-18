@@ -26,7 +26,7 @@ exports.createTable = async (req, res, next) => {
     });
     await _table.save();
 
-    res.status(201).json({ message: "Thêm bàn thành công" });
+    res.status(201).json({ message: "Thêm bàn thành công", table: _table });
   } catch (err) {
     const error = new Error(err.message);
     error.statusCode = 500;
@@ -47,15 +47,14 @@ exports.updateTable = async (req, res, next) => {
   const tableId = req.params.tableId;
   try {
     const currentTable = await Table.findById(tableId);
-    if(!currentTable){
-        const error = new Error("Bàn không tồn tại");
+    if (!currentTable) {
+      const error = new Error("Bàn không tồn tại");
       error.statusCode = 404;
       return next(error);
     }
     currentTable.name = name;
     currentTable.state = state;
-    if(state == "Còn trống")
-        currentTable.receipt = undefined;
+    if (state == "Còn trống") currentTable.receipt = undefined;
     await currentTable.save();
 
     res.status(201).json({ message: "Cập nhật bàn thành công" });
