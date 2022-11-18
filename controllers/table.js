@@ -44,7 +44,7 @@ exports.updateTable = async (req, res, next) => {
     return next(error);
   }
 
-  const { name, state } = req.body;
+  const { name } = req.body;
   const tableId = req.params.tableId;
   try {
     const currentTable = await Table.findById(tableId);
