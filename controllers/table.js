@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Table = require("../models/table");
+const Receipt = require("../models/receipt");
 
 const { getRole } = require("../util/roles");
 
@@ -54,7 +55,13 @@ exports.updateTable = async (req, res, next) => {
     }
     currentTable.name = name;
     currentTable.state = state;
-    if (state == "Còn trống") currentTable.receipt = undefined;
+
+    if (state == "Còn trống") {
+      const currentReceipt = await Receipt.findById(currentTable.receipt);
+      currentReceipt.tables.pull(tableId);
+      await currentReceipt.save();
+      currentTable.receipt = undefined;
+    }
     await currentTable.save();
 
     res.status(201).json({ message: "Cập nhật bàn thành công" });
