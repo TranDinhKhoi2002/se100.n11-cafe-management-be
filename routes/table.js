@@ -44,7 +44,6 @@ router.put(
           }
         });
       }),
-    body("state", "Trạng thái không hợp lệ").isIn(["Còn trống", "Đang dùng"]),
   ],
   tableController.updateTable
 );
