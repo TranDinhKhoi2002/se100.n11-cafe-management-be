@@ -16,10 +16,7 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
@@ -32,10 +29,7 @@ const authRoutes = require("./routes/auth");
 const tableRoutes = require("./routes/table");
 const productRoutes = require("./routes/product");
 
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "access.log"),
-  { flags: "a" }
-);
+const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
 
 app.use(helmet());
 app.use(compression());
@@ -62,4 +56,4 @@ mongoose
   })
   .catch((err) => {
     console.log(err);
-  })
+  });

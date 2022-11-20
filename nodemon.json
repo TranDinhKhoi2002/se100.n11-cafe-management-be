@@ -1,0 +1,9 @@
+{
+  "env": {
+    "MONGO_USER": "dinhnghia",
+    "MONGO_PASSWORD": "SDEcPc5R2J86Zspq",
+    "MONGO_DATABASE": "coffee-app",
+    "SG_API_KEY": "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",
+    "SG_TEMPLATE_ID": "d-3cc682a534ca49c6bb7bca00f76555a3"
+  }
+}

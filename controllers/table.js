@@ -68,6 +68,7 @@ exports.updateTable = async (req, res, next) => {
 exports.deleteTable = async (req, res, next) => {
   const tableId = req.params.tableId;
   try {
+    const role = await getRole(req.accountId);
     if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa bàn");
       error.statusCode = 401;
