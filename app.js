@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 const authRoutes = require("./routes/auth");
 const tableRoutes = require("./routes/table");
 const productRoutes = require("./routes/product");
+const dataRoutes = require("./routes/data");
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
 
@@ -37,6 +38,7 @@ app.use(morgan("combined", { stream: accessLogStream }));
 app.use("/auth", authRoutes);
 app.use(tableRoutes);
 app.use(productRoutes);
+app.use(dataRoutes);
 
 app.use((err, req, res, next) => {
   const { statusCode, message, data, validationErrors } = err;
