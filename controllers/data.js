@@ -15,7 +15,6 @@ exports.getDataForSelectBox = async (req, res, next) => {
     data.roles = Role.schema.paths.name.enumValues;
     data.tableStates = Table.schema.paths.state.enumValues;
 
-    console.log(data);
     res.status(200).json({ data });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
