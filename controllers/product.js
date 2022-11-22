@@ -13,9 +13,7 @@ exports.createProduct = async (req, res, next) => {
     return next(error);
   }
 
-  const { category, name, price } = req.body;
-  const image = req.file;
-  console.log(image);
+  const { category, name, price, image } = req.body;
   try {
     const role = await getRole(req.accountId);
     if (role != "Chủ quán" && role != "Quản lý") {
