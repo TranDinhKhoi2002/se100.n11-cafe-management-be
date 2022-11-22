@@ -60,8 +60,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 const isAuth = require("./middleware/is-auth");
 const { clearImage } = require("./util/file");
 
-app.use(isAuth);
-app.put("/post-image", (req, res, next) => {
+app.put("/post-image", isAuth, (req, res, next) => {
   if (!req.accountId) {
     throw new Error("Not authenticated");
   }
