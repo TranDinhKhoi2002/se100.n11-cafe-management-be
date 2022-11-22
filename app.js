@@ -9,6 +9,25 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
+
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, uuidv4() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
 
 const app = express();
 
@@ -35,6 +54,31 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"),
 app.use(helmet());
 app.use(compression());
 app.use(morgan("combined", { stream: accessLogStream }));
+app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
+app.use("/images", express.static(path.join(__dirname, "images")));
+
+const isAuth = require("./middleware/is-auth");
+const { clearImage } = require("./util/file");
+
+app.use(isAuth);
+app.put("/post-image", (req, res, next) => {
+  if (!req.accountId) {
+    throw new Error("Not authenticated");
+  }
+
+  if (!req.file) {
+    return res.status(200).json({ message: "No files provided" });
+  }
+
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+
+  return res.status(201).json({
+    message: "File stored",
+    filePath: req.file.path.replace(/\\/g, "/"),
+  });
+});
 app.use("/auth", authRoutes);
 app.use(tableRoutes);
 app.use(productRoutes);
@@ -42,7 +86,7 @@ app.use(dataRoutes);
 
 app.use((err, req, res, next) => {
   const { statusCode, message, data, validationErrors } = err;
-  res.status(statusCode).json({ message, data, validationErrors });
+  res.status(statusCode || 500).json({ message, data, validationErrors });
 });
 
 // const { generateFakeData, removeAllData } = require("./util/fakeData");

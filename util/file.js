@@ -1,11 +1,11 @@
+const path = require("path");
 const fs = require("fs");
 
-const deleteFile = (filePath) => {
+exports.clearImage = (filePath) => {
+  filePath = path.join(__dirname, "..", filePath);
   fs.unlink(filePath, (err) => {
     if (err) {
-      throw new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+      console.log(err);
     }
   });
 };
-
-exports.deleteFile = deleteFile;

@@ -13,7 +13,9 @@ exports.createProduct = async (req, res, next) => {
     return next(error);
   }
 
-  const { category, name, image, price } = req.body;
+  const { category, name, price } = req.body;
+  const image = req.file;
+  console.log(image);
   try {
     const role = await getRole(req.accountId);
     if (role != "Chủ quán" && role != "Quản lý") {
@@ -23,10 +25,10 @@ exports.createProduct = async (req, res, next) => {
     }
 
     const _product = new Product({
-        category,
-        name,
-        image,
-        price,
+      category,
+      name,
+      image,
+      price,
     });
     await _product.save();
 
@@ -57,8 +59,8 @@ exports.updateProduct = async (req, res, next) => {
       return next(error);
     }
     const currentProduct = await Product.findById(productId);
-    if(!currentProduct){
-        const error = new Error("Sản phẩm không tồn tại");
+    if (!currentProduct) {
+      const error = new Error("Sản phẩm không tồn tại");
       error.statusCode = 401;
       return next(error);
     }
@@ -90,12 +92,14 @@ exports.deleteProduct = async (req, res, next) => {
       error.statusCode = 404;
       return next(error);
     }
-    const currentReceipts = await Receipt.find({state: "Chưa thanh toán"});
-    const currentProducts = await currentReceipts.filter(_receipt => _receipt.products.filter(_product => _product.product == productId))
-    if(currentProducts){
-        const error = new Error("Không thể xóa sản phẩm đang phục vụ");
-        error.statusCode = 422;
-        return next(error);
+    const currentReceipts = await Receipt.find({ state: "Chưa thanh toán" });
+    const currentProducts = await currentReceipts.filter((_receipt) =>
+      _receipt.products.filter((_product) => _product.product == productId)
+    );
+    if (currentProducts) {
+      const error = new Error("Không thể xóa sản phẩm đang phục vụ");
+      error.statusCode = 422;
+      return next(error);
     }
     await Product.findByIdAndRemove(productId);
     res.status(200).json({ message: "Xoá sản phẩm thành công" });

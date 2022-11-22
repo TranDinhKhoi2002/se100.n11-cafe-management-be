@@ -26,8 +26,9 @@ exports.getDataForSelectBox = async (req, res, next) => {
 exports.getData = async (req, res, next) => {
   try {
     const products = await Product.find().populate("category");
+    const categories = await Category.find();
 
-    res.status(200).json({ products });
+    res.status(200).json({ products, categories });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
     error.statusCode = 500;
