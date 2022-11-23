@@ -44,9 +44,6 @@ app.use((req, res, next) => {
   next();
 });
 
-const cors = require("cors");
-app.use(cors({ origin: "http://localhost:3000" }));
-
 const authRoutes = require("./routes/auth");
 const tableRoutes = require("./routes/table");
 const productRoutes = require("./routes/product");
