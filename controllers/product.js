@@ -93,7 +93,7 @@ exports.deleteProduct = async (req, res, next) => {
       return next(error);
     }
     const currentReceipts = await Receipt.find({ state: "Chưa thanh toán" });
-    const currentProducts = await currentReceipts.filter((_receipt) =>
+    const currentProducts = currentReceipts.filter((_receipt) =>
       _receipt.products.filter((_product) => _product.product == productId)
     );
     if (currentProducts) {
@@ -112,7 +112,7 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find().populate("category");
+    const products = await Product.find({ state: "Đang bán" }).populate("category");
 
     res.status(200).json({ products });
   } catch (err) {
