@@ -30,7 +30,9 @@ exports.createProduct = async (req, res, next) => {
     });
     await _product.save();
 
-    res.status(201).json({ message: "Thêm sản phẩm thành công", product: _product.populate("category") });
+    const savedProduct = await Product.findById(_product._id).populate("category");
+
+    res.status(201).json({ message: "Thêm sản phẩm thành công", product: savedProduct });
   } catch (err) {
     const error = new Error(err.message);
     error.statusCode = 500;
