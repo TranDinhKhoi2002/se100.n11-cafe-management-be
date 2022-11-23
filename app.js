@@ -45,7 +45,11 @@ app.use((req, res, next) => {
 });
 
 const cors = require("cors");
-app.use(cors());
+const corsOptions = {
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 const authRoutes = require("./routes/auth");
 const tableRoutes = require("./routes/table");
