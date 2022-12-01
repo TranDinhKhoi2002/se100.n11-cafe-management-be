@@ -54,7 +54,7 @@ exports.createReceipt = async (req, res, next) => {
             receipt: savedReceipt
         });
     } catch (err) {
-        err.statusCode = error.statusCode || 500;
+        err.statusCode = err.statusCode || 500;
         next(err);
     }
 }
