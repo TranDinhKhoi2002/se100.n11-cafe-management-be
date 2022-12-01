@@ -9,4 +9,6 @@ router.get('/receipts', isAuth, receiptController.getReceipts);
 
 router.post('/receipt', isAuth, receiptController.createReceipt);
 
+router.get('/receipts/:receiptId', isAuth, receiptController.getReceiptById);
+
 module.exports = router;
