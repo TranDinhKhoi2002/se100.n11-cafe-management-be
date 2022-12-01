@@ -26,8 +26,8 @@ exports.createReceipt = async (req, res, next) => {
         try {
             product = await Product.findOne({ _id: p.productId });
         } catch (err) {
-            error.statusCode = error.statusCode || 500;
-            next(error);
+            err.statusCode = err.statusCode || 500;
+            next(err);
         }
 
         return {
@@ -54,7 +54,7 @@ exports.createReceipt = async (req, res, next) => {
             receipt: savedReceipt
         });
     } catch (err) {
-        error.statusCode = error.statusCode || 500;
-        next(error);
+        err.statusCode = error.statusCode || 500;
+        next(err);
     }
 }
