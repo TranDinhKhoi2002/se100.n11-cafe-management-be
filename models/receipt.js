@@ -51,4 +51,4 @@ const receiptSchema = new Schema({
 }, { timestamps: true });
 
 exports.Receipt = mongoose.model("Receipt", receiptSchema);
-exports.receiptState = receiptState
+exports.receiptState = receiptState;
