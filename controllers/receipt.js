@@ -1,9 +1,9 @@
-const Receipt = require('../models/receipt');
+const { Receipt, receiptState } = require('../models/receipt');
 const Product = require('../models/product');
 
 exports.getReceipts = async (req, res, next) => {
     try {
-        const receipts = await Receipt.find();
+        const receipts = await Receipt.find().populate('tables');
 
         res.status(200).json({
             receipts: receipts
@@ -37,7 +37,7 @@ exports.createReceipt = async (req, res, next) => {
             quantity: +p.quantity
         }
     });
-    const price = products.reduce(
+    const totalPrice = products.reduce(
         (result, product) => result + product.price * product.quantity,
         0
     );
@@ -72,6 +72,36 @@ exports.getReceiptById = async (req, res, next) => {
             message: 'Lấy thông tin hoá đơn thành công!',
             receipt: receipt
         });
+    } catch (err) {
+        err.statusCode = err.statusCode || 500;
+        next(err);
+    }
+}
+
+exports.changeReceiptState = async (req, res, next) => {
+    const receiptId = req.params.receiptId;
+    const state = +req.query.state;
+    try {
+        const updatedReceipt = await Receipt.findById(receiptId);
+        if (!updatedReceipt) {
+            const error = new Error('Hoá đơn không tồn tại hoặc đã bị huỷ');
+            error.statusCode = 404;
+            return next(error);
+        }
+        // update state -> 1: 'Đã thanh toán' || 2: 'Đã Huỷ'
+        if (state === 1) {
+            updatedReceipt.state = receiptState.UNPAID;
+        } else if (state === 2) {
+            updatedReceipt.state = receiptState.CANCELED;
+        } else {
+            const error = new Error('Tình trạng của hoá đơn không hợp lệ!');
+            error.statusCode = 404;
+            return next(error);
+        }
+        await updatedReceipt.save();
+        res.json({
+            message: ''
+        })
     } catch (err) {
         err.statusCode = err.statusCode || 500;
         next(err);

@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const receiptState = {
+  UNPAID: 'Chưa thanh toán',
+  PAID: 'Đã thanh toán',
+  CANCELED: 'Đã huỷ',
+};
+
 const receiptSchema = new Schema({
   tables: [
       {
@@ -34,12 +40,8 @@ const receiptSchema = new Schema({
   },
   state: {
     type: String,
-    enum: [
-      "Chưa thanh toán",
-      "Đã thanh toán",
-      "Đã Huỷ"
-    ],
-    default: "Chưa thanh toán",
+    enum: receiptState,
+    default: receiptState.UNPAID,
   },
   accountId: {
     type: Schema.Types.ObjectId,
@@ -48,4 +50,5 @@ const receiptSchema = new Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Receipt", receiptSchema);
+exports.Receipt = mongoose.model("Receipt", receiptSchema);
+exports.receiptState = receiptState
