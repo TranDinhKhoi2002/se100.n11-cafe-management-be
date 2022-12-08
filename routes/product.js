@@ -18,17 +18,6 @@ const productValidation = [
         }
       });
     }),
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Không được để trống tên sản phẩm")
-    .custom((value, { req }) => {
-      return Product.findOne({ name: value }).then((productDoc) => {
-        if (productDoc) {
-          return Promise.reject("Tên sản phẩm đã tồn tại");
-        }
-      });
-    }),
   body("price", "Giá sản phẩm không hợp lệ").isFloat({ min: 0 }),
 ];
 
@@ -36,9 +25,31 @@ router.get("/products", isAuth, productController.getProducts);
 
 router.get("/products/:productId", isAuth, productController.getProductById);
 
-router.post("/products", isAuth, productValidation, productController.createProduct);
+router.post(
+  "/products",
+  isAuth,
+  productValidation.concat(
+    body("name")
+      .trim()
+      .notEmpty()
+      .withMessage("Không được để trống tên sản phẩm")
+      .custom((value, { req }) => {
+        return Product.findOne({ name: value }).then((productDoc) => {
+          if (productDoc && productDoc._id.toString() !== req.body.id) {
+            return Promise.reject("Tên sản phẩm đã tồn tại");
+          }
+        });
+      })
+  ),
+  productController.createProduct
+);
 
-router.put("/products/:productId", isAuth, productValidation, productController.updateProduct);
+router.put(
+  "/products/:productId",
+  isAuth,
+  productValidation.concat(body("name").trim().notEmpty().withMessage("Không được để trống tên sản phẩm")),
+  productController.updateProduct
+);
 
 router.delete("/products/:productId", isAuth, productController.deleteProduct);
 

@@ -58,15 +58,28 @@ exports.updateProduct = async (req, res, next) => {
       error.statusCode = 401;
       return next(error);
     }
+
     const currentProduct = await Product.findById(productId);
     if (!currentProduct) {
       const error = new Error("Sản phẩm không tồn tại");
       error.statusCode = 401;
       return next(error);
     }
+
+    if (name !== currentProduct.name) {
+      const existingProduct = await Product.findOne({ name });
+      if (existingProduct) {
+        const error = new Error("Tên sản phẩm đã tồn tại");
+        error.statusCode = 422;
+        return next(error);
+      }
+    }
+
     currentProduct.category = category;
     currentProduct.name = name;
-    currentProduct.image = image;
+    if (image) {
+      currentProduct.image = image;
+    }
     currentProduct.price = price;
     await currentProduct.save();
 
@@ -81,6 +94,7 @@ exports.updateProduct = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
   const productId = req.params.productId;
   try {
+    const role = await getRole(req.accountId);
     if (role != "Chủ quán" && role != "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa sản phẩm");
       error.statusCode = 401;
@@ -92,16 +106,19 @@ exports.deleteProduct = async (req, res, next) => {
       error.statusCode = 404;
       return next(error);
     }
-    const currentReceipts = await Receipt.find({ state: "Chưa thanh toán" });
-    const currentProducts = currentReceipts.filter((_receipt) =>
-      _receipt.products.filter((_product) => _product.product == productId)
-    );
-    if (currentProducts) {
-      const error = new Error("Không thể xóa sản phẩm đang phục vụ");
-      error.statusCode = 422;
-      return next(error);
-    }
-    await Product.findByIdAndRemove(productId);
+    // const currentReceipts = await Receipt.find({ state: "Chưa thanh toán" });
+    // const currentProducts = currentReceipts.filter((_receipt) =>
+    //   _receipt.products.filter((_product) => _product.product == productId)
+    // );
+    // if (currentProducts) {
+    //   const error = new Error("Không thể xóa sản phẩm đang phục vụ");
+    //   error.statusCode = 422;
+    //   return next(error);
+    // }
+    // await Product.findByIdAndRemove(productId);
+
+    _product.state = "Đã nghỉ";
+    await _product.save();
     res.status(200).json({ message: "Xoá sản phẩm thành công" });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");

@@ -21,12 +21,9 @@ const productSchema = new Schema({
   },
   state: {
     type: String,
-    enum: [
-      "Đang bán",
-      "Đã nghỉ"
-    ],
+    enum: ["Đang bán", "Đã nghỉ"],
     default: "Đang bán",
-  }
+  },
 });
 
 module.exports = mongoose.model("Product", productSchema);
