@@ -183,7 +183,7 @@ exports.payForReceipt = async (req, res, next) => {
 
         if (receipt.state === receiptState.CANCELED) {
             const error = new Error('Hoá đơn đã bị huỷ!');
-            return next(err);
+            return next(error);
         }
 
         if (receipt.state !== receiptState.PAID) {
