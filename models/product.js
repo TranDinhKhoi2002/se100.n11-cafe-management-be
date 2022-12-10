@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const productState = {
+  ACTIVE: 'Đang bán',
+  PAUSE: 'Nghỉ bán'
+};
+
 const productSchema = new Schema({
   category: {
     type: Schema.Types.ObjectId,
@@ -21,9 +26,10 @@ const productSchema = new Schema({
   },
   state: {
     type: String,
-    enum: ["Đang bán", "Đã nghỉ"],
-    default: "Đang bán",
-  },
+    enum: productState,
+    default: productState.ACTIVE,
+  }
 });
 
-module.exports = mongoose.model("Product", productSchema);
+exports.Product = mongoose.model("Product", productSchema);
+exports.productState = productState;
