@@ -27,7 +27,7 @@ router.post(
             .notEmpty().withMessage('Hoá đơn phải có sản phẩm!')
             .custom((value, {req}) => {
                 Array.from(value).forEach(p => {
-                    if (p.quantity <= 0) {
+                    if (+p.quantity <= 0) {
                         return new Promise.reject(`Sản phẩm có id ${p.productId} phải có số lượng lớn hơn 0!`)
                     }
                 })
@@ -36,7 +36,7 @@ router.post(
             .notEmpty().withMessage('Hoá đơn phải có bàn!')
             .custom((value, {req}) => {
                 Array.from(value).forEach(tableId => {
-                    return Table.findById(value).then(tableDoc => {
+                    return Table.findById(tableId).then(tableDoc => {
                         if (!tableDoc) {
                             return new Promise.reject(`Bàn với id ${tableDoc._id} không tồn tại.`);
                         }
@@ -66,7 +66,7 @@ router.put(
             .notEmpty().withMessage('Hoá đơn phải có sản phẩm!')
             .custom((value, {req}) => {
                 Array.from(value).forEach(p => {
-                    if (p.quantity <= 0) {
+                    if (+p.quantity <= 0) {
                         return new Promise.reject(`Sản phẩm có id ${p.productId} phải có số lượng lớn hơn 0!`)
                     }
                 })

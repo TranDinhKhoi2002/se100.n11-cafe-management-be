@@ -1,10 +1,10 @@
 const { Receipt, receiptState } = require('../models/receipt');
+const { validationResult } = require("express-validator");
 const Product = require('../models/product');
 
 exports.getReceipts = async (req, res, next) => {
     try {
         const receipts = await Receipt.find().populate('tables');
-
         res.status(200).json({
             receipts: receipts
         });
@@ -17,7 +17,7 @@ exports.getReceipts = async (req, res, next) => {
 
 exports.createReceipt = async (req, res, next) => {
     // Check errors
-    const errors = validationResult(req);
+    const errors = validationResult(req);  
     if (!errors.isEmpty()) {
         const error = new Error(errors.array()[0].msg);
         error.statusCode = 422;
@@ -27,6 +27,7 @@ exports.createReceipt = async (req, res, next) => {
     // Create Receipt
     const accountId = req.body.accountId;
     const tableIds = [...req.body.tableIds];
+    
     const products =  req.body.products.map(async (p) => {
         let product;
         try {
@@ -35,7 +36,7 @@ exports.createReceipt = async (req, res, next) => {
             err.statusCode = err.statusCode || 500;
             next(err);
         }
-
+        
         return {
             product: product._id,
             name: product.name,
