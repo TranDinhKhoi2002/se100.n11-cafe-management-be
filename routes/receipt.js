@@ -63,3 +63,5 @@ router.put("/receipts/:receiptId/pay", isAuth, receiptController.payForReceipt);
 router.put("/receipts/:receiptId/remove", isAuth, receiptController.removeReceipt);
 
 module.exports = router;
+
+module.exports = router;

@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const tableState = {
+  READY: 'Trống',
+  USING: 'Đang dùng'
+};
+
 const tableSchema = new Schema({
   name: {
     type: String,
@@ -17,4 +22,5 @@ const tableSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Table", tableSchema);
+exports.Table = mongoose.model("Table", tableSchema);
+exports.tableState = tableState;
