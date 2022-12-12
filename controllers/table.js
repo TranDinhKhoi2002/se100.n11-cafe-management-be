@@ -54,6 +54,15 @@ exports.updateTable = async (req, res, next) => {
       return next(error);
     }
 
+    if (name !== currentTable.name) {
+      const existingTable = await Table.findOne({ name });
+      if (existingTable) {
+        const error = new Error("Tên bàn đã tồn tại");
+        error.statusCode = 422;
+        return next(error);
+      }
+    }
+
     currentTable.name = name;
     await currentTable.save();
 
@@ -81,7 +90,7 @@ exports.deleteTable = async (req, res, next) => {
       return next(error);
     }
 
-    if (_table.state == "Đang dùng") {
+    if (_table.state == "Đang dùng" || _table.receipt) {
       const error = new Error("Không thể xóa bàn đang được sử dụng");
       error.statusCode = 422;
       return next(error);

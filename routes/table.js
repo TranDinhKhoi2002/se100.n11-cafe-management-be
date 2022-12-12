@@ -32,19 +32,7 @@ router.post(
 router.put(
   "/tables/:tableId",
   isAuth,
-  [
-    body("name")
-      .trim()
-      .notEmpty()
-      .withMessage("Tên bàn không được để trống")
-      .custom((value, { req }) => {
-        return Table.findOne({ name: value }).then((tableDoc) => {
-          if (tableDoc) {
-            return Promise.reject("Tên bàn đã tồn tại");
-          }
-        });
-      }),
-  ],
+  [body("name").trim().notEmpty().withMessage("Tên bàn không được để trống")],
   tableController.updateTable
 );
 

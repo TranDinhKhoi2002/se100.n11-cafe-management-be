@@ -12,12 +12,9 @@ const tableSchema = new Schema({
   },
   state: {
     type: String,
-    enum: [
-        "Còn trống",
-        "Đang dùng",
-    ],
+    enum: ["Còn trống", "Đang dùng"],
     default: "Còn trống",
-  }
+  },
 });
 
 module.exports = mongoose.model("Table", tableSchema);
