@@ -1,9 +1,9 @@
-const Category = require("../models/category");
-const Product = require("../models/product");
-const Role = require("../models/role");
-const Receipt = require("../models/receipt");
+const { Category } = require("../models/category");
+const { Product } = require("../models/product");
+const { Role } = require("../models/role");
+const { Receipt } = require("../models/receipt");
 const User = require("../models/user");
-const Table = require("../models/table");
+const { Table } = require("../models/table");
 
 exports.getDataForSelectBox = async (req, res, next) => {
   try {

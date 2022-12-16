@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const Category = require("../models/category");
+const { Category } = require("../models/category");
 const { getRole } = require("../util/roles");
 
 exports.updateCategory = async (req, res, next) => {

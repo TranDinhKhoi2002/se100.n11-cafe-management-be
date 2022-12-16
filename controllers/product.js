@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
-const Product = require("../models/product");
-const Receipt = require("../models/receipt");
+const { Product } = require("../models/product");
+const { Receipt } = require("../models/receipt");
 
 const { getRole } = require("../util/roles");
 
@@ -95,7 +95,7 @@ exports.deleteProduct = async (req, res, next) => {
   const productId = req.params.productId;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
+    if (role !== "Chủ quán" && role !== "Quản lý") {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa sản phẩm");
       error.statusCode = 401;
       return next(error);

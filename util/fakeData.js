@@ -3,11 +3,11 @@ const bcryptjs = require("bcryptjs");
 const { sample, sum } = require("lodash");
 
 const Account = require("../models/account");
-const Category = require("../models/category");
-const Product = require("../models/product");
-const Receipt = require("../models/receipt");
-const Role = require("../models/role");
-const Table = require("../models/table");
+const { Category } = require("../models/category");
+const { Product } = require("../models/product");
+const { Receipt } = require("../models/receipt");
+const { Role } = require("../models/role");
+const { Table } = require("../models/table");
 const User = require("../models/user");
 
 exports.generateFakeData = async () => {

@@ -4,7 +4,7 @@ const { body } = require("express-validator");
 const router = express.Router();
 
 const Account = require("../models/account");
-const Table = require("../models/table");
+const { Table } = require("../models/table");
 const receiptController = require("../controllers/receipt");
 const isAuth = require("../middleware/is-auth");
 

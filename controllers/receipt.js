@@ -2,16 +2,23 @@ const { validationResult } = require("express-validator");
 const { faker } = require("@faker-js/faker");
 
 const { Receipt, receiptState } = require("../models/receipt");
-const Product = require("../models/product");
-const Table = require("../models/table");
+const { Product } = require("../models/product");
+const { Table } = require("../models/table");
+const { getRole } = require("../util/roles");
 
 exports.getReceipts = async (req, res, next) => {
   try {
-    const receipts = await Receipt.find().populate("tables");
+    const role = await getRole(req.accountId);
+    if (role !== "Chủ quán" && role !== "Quản lý" && role !== "Nhân viên") {
+      const error = new Error("Chỉ có nội bộ quán mới được xem danh sách hóa đơn");
+      error.statusCode = 401;
+      return next(error);
+    }
 
-    res.status(200).json({
-      receipts: receipts,
-    });
+    const receipts = await Receipt.find()
+      .populate("tables")
+      .populate({ path: "products", populate: { path: "product" } });
+    res.status(200).json({ receipts: receipts });
   } catch (err) {
     err.statusCode = err.statusCode || 500;
     next(err);

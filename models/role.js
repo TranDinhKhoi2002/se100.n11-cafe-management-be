@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const roleName = {
-  OWNER: 'Chủ quán',
-  MANAGER: 'Quản lí',
-  STAFF: 'Nhân viên'
+  OWNER: "Chủ quán",
+  MANAGER: "Quản lý",
+  STAFF: "Nhân viên",
 };
 
 const roleSchema = new Schema({

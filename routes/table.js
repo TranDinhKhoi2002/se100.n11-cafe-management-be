@@ -4,7 +4,7 @@ const router = express.Router();
 
 const tableController = require("../controllers/table");
 const isAuth = require("../middleware/is-auth");
-const Table = require("../models/table");
+const { Table } = require("../models/table");
 
 router.get("/tables", isAuth, tableController.getTables);
 
@@ -37,5 +37,9 @@ router.put(
 );
 
 router.delete("/tables/:tableId", isAuth, tableController.deleteTable);
+
+router.put("/tables/move/:tableId", isAuth, tableController.moveTable);
+
+router.post("/tables/merge", isAuth, tableController.mergeTable);
 
 module.exports = router;

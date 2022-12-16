@@ -4,8 +4,8 @@ const router = express.Router();
 
 const productController = require("../controllers/product");
 const isAuth = require("../middleware/is-auth");
-const Product = require("../models/product");
-const Category = require("../models/category");
+const { Product } = require("../models/product");
+const { Category } = require("../models/category");
 
 const productValidation = [
   body("category")

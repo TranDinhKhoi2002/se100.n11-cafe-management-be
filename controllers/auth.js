@@ -7,7 +7,7 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SG_API_KEY);
 
 const Account = require("../models/account");
-const Role = require("../models/role");
+const { Role } = require("../models/role");
 const User = require("../models/user");
 const { getRole } = require("../util/roles");
 
@@ -58,17 +58,7 @@ exports.signup = async (req, res, next) => {
     return next(error);
   }
 
-  const {
-    username,
-    password,
-    role,
-    name,
-    address,
-    email,
-    phone,
-    gender,
-    birthday,
-  } = req.body;
+  const { username, password, role, name, address, email, phone, gender, birthday } = req.body;
 
   try {
     const existingAccount = await Account.findOne({ username });
@@ -116,9 +106,7 @@ exports.resetPassword = async (req, res, next) => {
 
   crypto.randomBytes(32, async (err, buffer) => {
     if (err) {
-      return res
-        .status(500)
-        .json({ message: "Có lỗi xảy ra, vui lòng thử lại sau" });
+      return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại sau" });
     }
 
     const token = buffer.toString("hex");
@@ -129,7 +117,7 @@ exports.resetPassword = async (req, res, next) => {
       }
 
       const account = await Account.findOne({
-        _id: user.account.toString()
+        _id: user.account.toString(),
       });
       if (!account) {
         return res.status(404).json({ message: "Tài khoản không tồn tại" });
@@ -171,9 +159,7 @@ exports.changePassword = async (req, res, next) => {
     });
 
     if (!account) {
-      return res
-        .status(404)
-        .json({ message: "Tài khoản không tồn tại hoặc link đã hết thời hạn" });
+      return res.status(404).json({ message: "Tài khoản không tồn tại hoặc link đã hết thời hạn" });
     }
 
     const hashedPassword = bcryptjs.hashSync(newPassword, 12);

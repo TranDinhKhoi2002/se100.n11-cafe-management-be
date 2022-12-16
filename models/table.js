@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const tableState = {
-  READY: 'Trống',
-  USING: 'Đang dùng'
+  READY: "Còn trống",
+  USING: "Đang dùng",
 };
 
 const tableSchema = new Schema({
