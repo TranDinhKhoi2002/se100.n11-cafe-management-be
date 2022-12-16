@@ -55,6 +55,7 @@ const productRoutes = require("./routes/product");
 const dataRoutes = require("./routes/data");
 const categoryRoutes = require("./routes/category");
 const receiptRoutes = require("./routes/receipt");
+const userRoutes = require("./routes/user");
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
 
@@ -91,6 +92,7 @@ app.use(productRoutes);
 app.use(dataRoutes);
 app.use(categoryRoutes);
 app.use(receiptRoutes);
+app.use(userRoutes);
 
 app.use((err, req, res, next) => {
   const { statusCode, message, data, validationErrors } = err;
