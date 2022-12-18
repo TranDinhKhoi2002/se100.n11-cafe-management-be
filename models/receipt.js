@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const receiptState = {
   UNPAID: "Chưa thanh toán",
   PAID: "Đã thanh toán",
-  CANCELED: "Đã huỷ",
+  CANCLED: "Đã hủy",
 };
 
 const receiptSchema = new Schema(
@@ -43,7 +43,7 @@ const receiptSchema = new Schema(
     },
     state: {
       type: String,
-      enum: ["Chưa thanh toán", "Đã thanh toán", "Đã huỷ"],
+      enum: [receiptState.PAID, receiptState.UNPAID, receiptState.CANCLED],
       default: "Chưa thanh toán",
     },
   },

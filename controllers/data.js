@@ -27,8 +27,9 @@ exports.getData = async (req, res, next) => {
   try {
     const products = await Product.find({ state: "Đang bán" }).populate("category");
     const categories = await Category.find();
+    const user = await User.findOne({ account: req.accountId }).populate("role");
 
-    res.status(200).json({ products, categories });
+    res.status(200).json({ products, categories, user });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
     error.statusCode = 500;

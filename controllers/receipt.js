@@ -3,7 +3,7 @@ const { faker } = require("@faker-js/faker");
 
 const { Receipt, receiptState } = require("../models/receipt");
 const { Product } = require("../models/product");
-const { Table } = require("../models/table");
+const { Table, tableState } = require("../models/table");
 const { getRole } = require("../util/roles");
 
 exports.getReceipts = async (req, res, next) => {
@@ -109,47 +109,30 @@ exports.editReceipt = async (req, res, next) => {
     return next(error);
   }
 
+  const { products } = req.body;
   const receiptId = req.params.receiptId;
   try {
+    const role = await getRole(req.accountId);
+    if (role !== "Chủ quán" && role !== "Quản lý") {
+      const error = new Error("Chỉ có chủ quán và quản lý mới có thể chỉnh sửa hóa đơn");
+      error.statusCode = 401;
+      return next(error);
+    }
+
     const receipt = await Receipt.findById(receiptId);
     if (!receipt) {
-      const error = new Error("Hoá đơn không tồn tại!");
+      const error = new Error("Hoá đơn không tồn tại");
       error.statusCode = 404;
       return next(error);
     }
 
-    const accountId = req.body.accountId;
-    const updatedTableIds = [...req.body.tableIds];
-    const updatedProducts = req.body.products.map(async (p) => {
-      let product;
-      try {
-        product = await Product.findById(p.productId);
-      } catch (err) {
-        return next(err);
-      }
+    const updatedTotalPrice = products.reduce((result, product) => result + product.price * product.quantity, 0);
 
-      return {
-        product: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: +p.quantity,
-      };
-    });
-    const updatedTotalPrice = updatedProducts.reduce((result, product) => result + product.price * product.quantity, 0);
-
-    if (receipt.accountId.toString() !== accountId.toString()) {
-      receipt.accountId = accountId;
-    }
-    receipt.tables = updatedTableIds;
-    receipt.products = updatedProducts;
+    receipt.products = products;
     receipt.totalPrice = updatedTotalPrice;
-
     await receipt.save();
 
-    res.status(200).json({
-      message: "Chỉnh sửa hoá đơn thành công!",
-      editedReceipt: receipt,
-    });
+    res.status(201).json({ message: "Chỉnh sửa hoá đơn thành công", editedReceipt: receipt });
   } catch (err) {
     const error = new Error(err.message);
     error.statusCode = 500;
@@ -159,29 +142,30 @@ exports.editReceipt = async (req, res, next) => {
 
 exports.removeReceipt = async (req, res, next) => {
   const receiptId = req.params.receiptId;
-  const accountId = req.body.accountId;
   try {
     const updatedReceipt = await Receipt.findById(receiptId);
     if (!updatedReceipt) {
-      const error = new Error("Hoá đơn không tồn tại!");
+      const error = new Error("Hoá đơn không tồn tại");
       error.statusCode = 404;
       return next(error);
     }
-    // update state
-    if (updatedReceipt.state !== receiptState.CANCELED) {
-      updatedReceipt.state = receiptState.CANCELED;
-    }
 
-    // update account id who removed receipt
-    if (updatedReceipt.accountId.toString() !== accountId.toString()) {
-      updatedReceipt.accountId = accountId;
+    updatedReceipt.tables.forEach(async (tableId) => {
+      const currentTable = await Table.findById(tableId);
+      currentTable.state = tableState.READY;
+      currentTable.receipt = undefined;
+      await currentTable.save();
+    });
+
+    if (updatedReceipt.state !== receiptState.CANCLED) {
+      updatedReceipt.state = receiptState.CANCLED;
     }
     await updatedReceipt.save();
-    res.status(200).json({
-      message: "Đã huỷ hoá đơn!",
-    });
+    res.status(200).json({ message: "Đã huỷ hoá đơn" });
   } catch (err) {
-    next(err);
+    const error = new Error(err.message);
+    error.statusCode = 500;
+    next(error);
   }
 };
 
@@ -196,8 +180,8 @@ exports.payForReceipt = async (req, res, next) => {
       return next(error);
     }
 
-    if (receipt.state === receiptState.CANCELED) {
-      const error = new Error("Hoá đơn đã bị huỷ!");
+    if (receipt.state === receiptState.CANCLED) {
+      const error = new Error("Hoá đơn đã bị huỷ");
       error.statusCode = 422;
       return next(error);
     }
