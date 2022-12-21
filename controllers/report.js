@@ -27,13 +27,13 @@ exports.getReportByDate = async (req, res, next) => {
         }
         else{
           report.products.push({
-            id: product._id.toString(),
+            id: product.product.toString(),
             name: product.name,
             price: product.price,
             quantity: product.quantity,
             totalPrice: product.price * product.quantity
           })
-          productInReceipts.push(product._id.toString());
+          productInReceipts.push(product.product.toString());
         }
         report.totalPrice = report.totalPrice + product.price * product.quantity;
       }
