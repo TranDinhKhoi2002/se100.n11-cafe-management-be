@@ -14,6 +14,7 @@ exports.getReportByDate = async (req, res, next) => {
     nextDate.setHours(0,0,0,0);
     const receipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: reportDate, $lt: nextDate}});
     report.products = [];
+    report.totalQuantity = 0;
     report.totalPrice = 0;
     const productInReceipts = [];
     for(let receipt of receipts){
@@ -35,6 +36,7 @@ exports.getReportByDate = async (req, res, next) => {
           })
           productInReceipts.push(product.product.toString());
         }
+        report.totalQuantity = report.totalQuantity + product.quantity;
         report.totalPrice = report.totalPrice + product.price * product.quantity;
       }
     }
@@ -70,6 +72,7 @@ exports.getReportByMonth = async (req, res, next) => {
     report.date = startDate.toLocaleDateString('en-GB');
     const receipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: startDate, $lt: endDate}});
     report.products = [];
+    report.totalQuantity = 0;
     report.totalPrice = 0;
     const productInReceipts = [];
     for(let receipt of receipts){
@@ -91,6 +94,7 @@ exports.getReportByMonth = async (req, res, next) => {
           })
           productInReceipts.push(product.product.toString());
         }
+        report.totalQuantity = report.totalQuantity + product.quantity;
         report.totalPrice = report.totalPrice + product.price * product.quantity;
       }
     }
