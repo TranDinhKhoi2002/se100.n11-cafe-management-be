@@ -62,7 +62,7 @@ router.post(
 );
 
 router.put(
-  "/users/:userId",
+  "/users/:userId/edit",
   isAuth,
   [
     body("role").notEmpty().isMongoId(),
@@ -81,6 +81,30 @@ router.put(
     body("birthday", "Ngày sinh không hợp lệ").isISO8601(),
   ],
   userController.editUser
+);
+
+router.put(
+  "users/:userId/change-password", 
+  isAuth,
+  [
+    body("newPassword", "Mật khẩu phải chứa ít nhất 5 ký tự")
+      .isLength({ min: 5 })
+      .isAlphanumeric()
+      .trim()
+      .custom((value, { req }) => {
+        if (value === req.body.oldPassword) {
+          return Promise.reject("Mật khẩu mới trùng với mật khẩu cũ");
+        }
+        return true;
+      }),
+    body("confirmNewPassword").custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        return Promise.reject("Xác nhận mật khẩu không trùng khớp");
+      }
+      return true;
+    }),
+  ],
+  userController.changePassword
 );
 
 module.exports = router;

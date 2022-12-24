@@ -79,15 +79,15 @@ exports.editUser = async (req, res, next) => {
   const { name, role, email, phone, address, gender } = req.body;
 
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate("role");
     if (!user) {
-      const error = new Error("Không tìm thấy User");
+      const error = new Error("User không tồn tại.");
       error.statusCode = 404;
       return next(error);
     }
 
     if (email !== user.email.toString()) {
-      const existingUser = User.findOne({ email: email });
+      const existingUser = await User.findOne({ email: email });
       if (existingUser) {
         const error = new Error("Email đã tồn tại");
         error.statusCode = 409;
@@ -95,8 +95,59 @@ exports.editUser = async (req, res, next) => {
       }
     }
 
+    // Check if user is Owner so we can change role for this user
+    if (user.role.name === roleName.OWNER) {
+      user.role = role;
+    }
 
+    user.name = name;
+    user.email = email;
+    user.phone = phone;
+    user.address = address;
+    user.gender = user.gender;
+    await user.save();
+
+    res.status(200).json({
+      message: "Thay đổi thông tin user thành công!"
+    });
   } catch (err) {
-
+    next(err);
   }  
+}
+
+exports.changePassword = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error(errors.array()[0].msg);
+    error.statusCode = 422;
+    error.validationErrors = errors.array();
+    return next(error);
+  }
+
+  const userId = req.params.userId;
+  const newPassword = req.body.newPassword;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("User không tồn tại.");
+      error.statusCode = 404;
+      return next(error);
+    }
+    
+    const account = await Account.findById(user.account);
+    if (!account) {
+      const error = new Error("Account không tồn tại.");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    const hashedPassword = bcryptjs.hashSync(newPassword);
+    account.password = hashedPassword;
+    await account.save();
+
+    res.status(200).json({ message: "Thay đổi mật khẩu thành công!"});
+  } catch (err) {
+    next(err);
+  }
 }
