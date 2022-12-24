@@ -7,4 +7,6 @@ router.post("/report-by-date", isAuth, reportController.getReportByDate);
 
 router.post("/report-by-month", isAuth, reportController.getReportByMonth);
 
+router.post("/report-by-year", isAuth, reportController.getReportByYear);
+
 module.exports = router;

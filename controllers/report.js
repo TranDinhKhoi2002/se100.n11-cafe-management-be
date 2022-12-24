@@ -143,3 +143,39 @@ exports.getReportByMonth = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getReportByYear = async (req, res, next) => {
+    try {
+        const { year } = req.body;
+        const startDate = new Date(year, 0, 1);
+        const endDate = new Date(year, 11, 31);
+        startDate.setHours(0,0,0,0);
+        endDate.setHours(24,0,0,0);
+        const report = {};
+        report.monthRevenues = [];
+        for(let month = 0; month < 12 ; month++){
+            const firstDate = new Date(year, month, 1);
+            const lastDate = new Date(year, month + 1, 0);
+            firstDate.setHours(0,0,0,0);
+            lastDate.setHours(24,0,0,0);
+            const monthReceipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: firstDate, $lt: lastDate}});
+            var totalPrice = 0;
+            var totalQuantity = 0;
+            for(let receipt of monthReceipts){
+                totalPrice = totalPrice + receipt.totalPrice;
+                for(let product of receipt.products){
+                totalQuantity = totalQuantity + product.quantity;
+                }
+            }
+            report.monthRevenues.push({
+                totalPrice: totalPrice,
+                totalQuantity: totalQuantity
+            })
+        }
+        res.status(200).json({ report });
+    } catch(err) {
+        const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+        error.statusCode = 500;
+        next(error);
+    }
+}
