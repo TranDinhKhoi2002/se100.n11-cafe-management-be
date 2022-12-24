@@ -16,7 +16,6 @@ exports.createUser = async (req, res, next) => {
   const {
     username,
     password,
-    confirmPassword,
     role,
     name,
     address,
@@ -39,7 +38,7 @@ exports.createUser = async (req, res, next) => {
     const existingRole = await Role.findOne({ name: role });
     if (!existingRole) {
       const error = new Error("Vai trò không tồn tại");
-      error.statusCode = 422;
+      error.statusCode = 404;
       return next(error);
     }
 
@@ -96,15 +95,15 @@ exports.editUser = async (req, res, next) => {
     }
 
     // Check if user is Owner so we can change role for this user
-    if (user.role.name === roleName.OWNER) {
-      user.role = role;
+    if (user.role.name === roleName.OWNER && user.role._id.toString() !== role.toString()) {
+      user.role._id = role;
     }
 
     user.name = name;
     user.email = email;
     user.phone = phone;
     user.address = address;
-    user.gender = user.gender;
+    user.gender = gender;
     await user.save();
 
     res.status(200).json({
