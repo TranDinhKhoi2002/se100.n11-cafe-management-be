@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
 const Account = require("../models/account");
-const Role = require("../models/role");
+const { Role, roleName } = require("../models/role");
 
 const { getRole } = require("../util/roles");
 
@@ -65,3 +65,38 @@ exports.createUser = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.editUser = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error(errors.array()[0].msg);
+    error.statusCode = 422;
+    error.validationErrors = errors.array();
+    return next(error);
+  }
+
+  const userId = req.params.userId;
+  const { name, role, email, phone, address, gender } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("Không tìm thấy User");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    if (email !== user.email.toString()) {
+      const existingUser = User.findOne({ email: email });
+      if (existingUser) {
+        const error = new Error("Email đã tồn tại");
+        error.statusCode = 409;
+        return next(error);
+      }
+    }
+
+
+  } catch (err) {
+
+  }  
+}

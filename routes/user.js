@@ -61,4 +61,26 @@ router.post(
   userController.createUser
 );
 
+router.put(
+  "/users/:userId",
+  isAuth,
+  [
+    body("role").notEmpty().isMongoId(),
+    body("name", "Tên không được để trống").trim().notEmpty(),
+    body("address", "Địa chỉ không được để trống").trim().notEmpty(),
+    body("phone", "Số điện thoại không hợp lệ")
+      .isMobilePhone("vi-VN")
+      .custom((value, { req }) => {
+        return User.findOne({ phone: value }).then((userDoc) => {
+          if (userDoc) {
+            return Promise.reject("Số điện thoại đã được sử dụng");
+          }
+        });
+      }),
+    body("gender", "Giới tính không hợp lệ").isIn(["Nam", "Nữ"]),
+    body("birthday", "Ngày sinh không hợp lệ").isISO8601(),
+  ],
+  userController.editUser
+);
+
 module.exports = router;
