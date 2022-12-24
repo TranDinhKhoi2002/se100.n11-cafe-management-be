@@ -1,6 +1,8 @@
 const {receiptState, Receipt} = require("../models/receipt");
 const {categoryName, Category} = require("../models/category");
 const {productState, Product} = require("../models/product");
+const {roleName, Role} = require("../models/role");
+const User = require("../models/user");
 
 exports.getReportByDate = async (req, res, next) => {
   try {
@@ -172,6 +174,97 @@ exports.getReportByYear = async (req, res, next) => {
                 totalQuantity: totalQuantity
             })
         }
+        res.status(200).json({ report });
+    } catch(err) {
+        const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+        error.statusCode = 500;
+        next(error);
+    }
+}
+
+exports.getStatistic = async (req, res, next) => {
+    try {
+        const currentDate = new Date();
+        const nextDate = new Date();
+        currentDate.setHours(0,0,0,0);
+        nextDate.setHours(24,0,0,0);
+        const report = {};
+        report.revenue = 0;
+        report.quantity = 0;
+        report.products = [];
+        report.categories = [];
+        const users = await User.find().populate("role");
+        const staffs = users.filter(user => user.role.name != roleName.OWNER);
+        report.staff = staffs.length;
+        const dateReceipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: currentDate, $lt: nextDate}});
+        dateReceipts.forEach(receipt => {
+          report.revenue += receipt.totalPrice;
+          receipt.products.forEach(product => {
+            report.quantity += product.quantity;
+          })
+        })
+        const receipts = await Receipt.find({state: receiptState.PAID});
+        const productInReceipts = [];
+        const categoryInReceipts = [];
+        for(let receipt of receipts){
+          for(let product of receipt.products){
+            const existingProductIndex = report.products.findIndex(pro => pro.id == product.product);
+            const existingProduct = await Product.findById(product.product).populate("category");
+            const existingCategoryIndex = report.categories.findIndex(category => category.id == existingProduct.category._id);
+            if(existingCategoryIndex != -1){
+              report.categories[existingCategoryIndex].quantity = report.categories[existingCategoryIndex].quantity + product.quantity;
+              report.categories[existingCategoryIndex].totalPrice = report.categories[existingCategoryIndex].totalPrice + product.price * product.quantity;
+            }
+            else{
+              report.categories.push({
+                id: existingProduct.category._id.toString(),
+                name: existingProduct.category.name,
+                quantity: product.quantity,
+                totalPrice: product.price * product.quantity
+              });
+              categoryInReceipts.push(existingProduct.category._id.toString());
+            }
+            if(existingProductIndex != -1){
+              report.products[existingProductIndex].name = product.name;
+              report.products[existingProductIndex].price = product.price;
+              report.products[existingProductIndex].quantity = report.products[existingProductIndex].quantity + product.quantity;
+              report.products[existingProductIndex].totalPrice = report.products[existingProductIndex].totalPrice + product.price * product.quantity;
+            }
+            else{
+              report.products.push({
+                id: product.product.toString(),
+                name: product.name,
+                price: product.price,
+                quantity: product.quantity,
+                totalPrice: product.price * product.quantity
+              })
+              productInReceipts.push(product.product.toString());
+            }
+          }
+        }
+        const products = await Product.find({state: productState.ACTIVE});
+        const otherProducts = products.filter(product => !productInReceipts.includes(product._id.toString()));
+        for(let product of otherProducts){
+          report.products.push({
+            id: product._id.toString(),
+            name: product.name,
+            quantity: 0,
+            totalPrice: 0
+          })
+        }
+        const categories = await Category.find();
+        const otherCategories = categories.filter(category => !categoryInReceipts.includes(category._id.toString()));
+        console.log(categoryInReceipts)
+        for(let category of otherCategories){
+          report.categories.push({
+            id: category._id.toString(),
+            name: category.name,
+            quantity: 0,
+            totalPrice: 0
+          })
+        }
+        report.products.sort((a, b) => a.quantity - b.quantity);
+        report.categories.sort((a, b) => a.totalPrice - b.totalPrice);
         res.status(200).json({ report });
     } catch(err) {
         const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
