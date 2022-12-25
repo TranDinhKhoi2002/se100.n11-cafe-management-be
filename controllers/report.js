@@ -155,6 +155,8 @@ exports.getReportByYear = async (req, res, next) => {
         endDate.setHours(24,0,0,0);
         const report = {};
         report.monthRevenues = [];
+        report.totalRevenue = 0;
+        report.totalQuantity = 0;
         for(let month = 0; month < 12 ; month++){
             const firstDate = new Date(year, month, 1);
             const lastDate = new Date(year, month + 1, 0);
@@ -172,7 +174,9 @@ exports.getReportByYear = async (req, res, next) => {
             report.monthRevenues.push({
                 totalPrice: totalPrice,
                 totalQuantity: totalQuantity
-            })
+            });
+            report.totalRevenue += totalPrice;
+            report.totalQuantity += totalQuantity;
         }
         res.status(200).json({ report });
     } catch(err) {
