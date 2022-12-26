@@ -10,29 +10,6 @@ router.post(
   "/users",
   isAuth,
   [
-    body("username")
-      .isLength({ min: 5 })
-      .isAlphanumeric()
-      .trim()
-      .withMessage("Tên đăng nhập phải chứa ít nhất 5 ký tự")
-      .custom(
-        (value, { req }) => {
-        return User.findOne({ username: value }).then((userDoc) => {
-          if (userDoc) {
-            return Promise.reject("Tên đăng nhập đã tồn tại");
-          }
-        });
-      }),
-    body("password", "Mật khẩu phải chứa ít nhất 5 ký tự")
-      .isLength({ min: 5 })
-      .isAlphanumeric()
-      .trim(),
-    body("confirmPassword").custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Xác nhận mật khẩu không trùng khớp");
-      }
-      return true;
-    }),
     body("name", "Tên không được để trống").trim().notEmpty(),
     body("address", "Địa chỉ không được để trống").trim().notEmpty(),
     body("email")
@@ -60,5 +37,11 @@ router.post(
   ],
   userController.createUser
 );
+
+router.get("/users", isAuth, userController.getUsers);
+
+router.delete("/users/:userId", isAuth, userController.deleteUser);
+
+router.put("/users", isAuth, userController.deleteSelectedUsers);
 
 module.exports = router;

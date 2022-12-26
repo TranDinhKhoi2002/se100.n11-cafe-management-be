@@ -185,9 +185,11 @@ exports.mergeTable = async (req, res, next) => {
       const currentReceipt = await Receipt.findById(currentTable.receipt);
       if (currentReceipt !== null && currentReceipt._id.toString() !== selectedReceipt._id.toString()) {
         currentReceipt.products.forEach((product) => {
-          const existingProductIndex = products.findIndex((item) => item._id.toString() === product._id.toString());
+          const existingProductIndex = products.findIndex(
+            (item) => item.product.toString() === product.product.toString()
+          );
           if (existingProductIndex >= 0) {
-            products[existingProductIndex].quantity++;
+            products[existingProductIndex].quantity += product.quantity;
           } else {
             products.push(product);
           }

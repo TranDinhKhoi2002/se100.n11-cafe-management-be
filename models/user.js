@@ -37,6 +37,11 @@ const userSchema = new Schema({
     type: Date,
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["Đang làm", "Đã nghỉ"],
+    default: "Đang làm",
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

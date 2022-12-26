@@ -117,7 +117,7 @@ exports.deleteProduct = async (req, res, next) => {
     // }
     // await Product.findByIdAndRemove(productId);
 
-    _product.state = "Đã nghỉ";
+    _product.state = "Nghỉ bán";
     await _product.save();
     res.status(200).json({ message: "Xoá sản phẩm thành công" });
   } catch (err) {

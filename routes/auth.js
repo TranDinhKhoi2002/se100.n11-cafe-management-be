@@ -11,14 +11,8 @@ router.post("/login", authController.login);
 router.post(
   "/signup",
   [
-    body("username", "Tên đăng nhập phải chứa ít nhất 5 ký tự")
-      .isLength({ min: 5 })
-      .isAlphanumeric()
-      .trim(),
-    body("password", "Mật khẩu phải chứa ít nhất 5 ký tự")
-      .isLength({ min: 5 })
-      .isAlphanumeric()
-      .trim(),
+    body("username", "Tên đăng nhập phải chứa ít nhất 5 ký tự").isLength({ min: 5 }).isAlphanumeric().trim(),
+    body("password", "Mật khẩu phải chứa ít nhất 5 ký tự").isLength({ min: 5 }).isAlphanumeric().trim(),
     body("confirmPassword").custom((value, { req }) => {
       if (value !== req.body.password) {
         throw new Error("Xác nhận mật khẩu không trùng khớp");
@@ -63,5 +57,7 @@ router.post(
 );
 
 router.post("/change-password", authController.changePassword);
+
+router.get("/account", authController.getExistingAccount);
 
 module.exports = router;

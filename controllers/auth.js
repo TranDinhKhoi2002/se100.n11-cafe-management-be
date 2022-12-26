@@ -129,8 +129,8 @@ exports.resetPassword = async (req, res, next) => {
 
       sgMail.send({
         to: req.body.email,
-        from: "20520224@gm.uit.edu.vn",
-        templateId: process.env.SG_TEMPLATE_ID,
+        from: "trandinhkhoi102@gmail.com",
+        templateId: process.env.SG_RESET_PASSWORD_TEMPLATE_ID,
         dynamicTemplateData: {
           token: token,
         },
@@ -174,4 +174,16 @@ exports.changePassword = async (req, res, next) => {
     error.statusCode = 500;
     next(error);
   }
+};
+
+exports.getExistingAccount = async (req, res, next) => {
+  try {
+    const account = await Account.findOne({
+      resetToken: token,
+      resetTokenExpiration: { $gt: Date.now() },
+    });
+    if (!account) {
+      return res.status(401).json({ message: "Bạn không thể truy cập vào trang này" });
+    }
+  } catch (error) {}
 };

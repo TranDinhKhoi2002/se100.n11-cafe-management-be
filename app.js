@@ -57,11 +57,11 @@ const categoryRoutes = require("./routes/category");
 const receiptRoutes = require("./routes/receipt");
 const userRoutes = require("./routes/user");
 
-const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
+// const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
 
 app.use(helmet());
 app.use(compression());
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
 

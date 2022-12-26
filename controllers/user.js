@@ -1,9 +1,14 @@
 const { validationResult } = require("express-validator");
+const sgMail = require("@sendgrid/mail");
+const bcryptjs = require("bcryptjs");
+
 const User = require("../models/user");
 const Account = require("../models/account");
-const Role = require("../models/role");
+const { Role } = require("../models/role");
 
 const { getRole } = require("../util/roles");
+
+sgMail.setApiKey(process.env.SG_API_KEY);
 
 exports.createUser = async (req, res, next) => {
   const errors = validationResult(req);
@@ -13,38 +18,26 @@ exports.createUser = async (req, res, next) => {
     error.validationErrors = errors.array();
     return next(error);
   }
-  const {
-    username,
-    password,
-    confirmPassword,
-    role,
-    name,
-    address,
-    email,
-    phone,
-    gender,
-    birthday,
-  } = req.body;
+  const { role, name, address, email, phone, gender, birthday } = req.body;
 
   try {
-    const currentUserRole = await getRole(req.account);
+    const currentUserRole = await getRole(req.accountId);
     if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
-      const error = new Error(
-        "Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên"
-      );
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên");
       error.statusCode = 401;
       return next(error);
     }
 
     const existingRole = await Role.findOne({ name: role });
     if (!existingRole) {
-      const error = new Error("Vai trò không tồn tại");
+      const error = new Error("Chức vụ không tồn tại");
       error.statusCode = 422;
       return next(error);
     }
 
-    const hashedPassword = bcryptjs.hashSync(password, 12);
-    const account = new Account({ username, password: hashedPassword });
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = bcryptjs.hashSync(randomPassword, 12);
+    const account = new Account({ username: email, password: hashedPassword });
     await account.save();
 
     const user = new User({
@@ -58,7 +51,83 @@ exports.createUser = async (req, res, next) => {
       birthday,
     });
     await user.save();
-    res.status(200).json({ message: "Đăng ký thành công" });
+
+    console.log(process.env.SG_SEND_PASSWORD_TEMPLATE_ID);
+
+    sgMail.send({
+      to: email,
+      from: "trandinhkhoi102@gmail.com",
+      templateId: process.env.SG_SEND_PASSWORD_TEMPLATE_ID,
+      dynamicTemplateData: {
+        randomPassword,
+      },
+    });
+
+    res.status(201).json({ message: "Thêm nhân viên thành công" });
+  } catch (err) {
+    const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+    error.statusCode = 500;
+    next(error);
+  }
+};
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({ status: "Đang làm" }).populate("role").populate("account");
+    res.status(200).json({ users });
+  } catch (err) {
+    const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+    error.statusCode = 500;
+    next(error);
+  }
+};
+
+exports.deleteUser = async (req, res, next) => {
+  const userId = req.params.userId;
+  try {
+    const currentUserRole = await getRole(req.accountId);
+    if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên");
+      error.statusCode = 401;
+      return next(error);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("Nhân viên không tồn tại");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    user.status = "Đã nghỉ";
+    await user.save();
+
+    res.status(200).json({ message: "Xóa nhân viên thành công" });
+  } catch (err) {
+    const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
+    error.statusCode = 500;
+    next(error);
+  }
+};
+
+exports.deleteSelectedUsers = async (req, res, next) => {
+  const userIds = req.body.userIds;
+  try {
+    const currentUserRole = await getRole(req.accountId);
+    if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên");
+      error.statusCode = 401;
+      return next(error);
+    }
+
+    const filteredUsers = await User.find({ _id: { $in: userIds } });
+    for (let index = 0; index < filteredUsers.length; index++) {
+      const currentUser = filteredUsers[index];
+      currentUser.status = "Đã nghỉ";
+      await currentUser.save();
+    }
+
+    res.status(200).json({ message: "Xóa nhân viên thành công" });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
     error.statusCode = 500;
