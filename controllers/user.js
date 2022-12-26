@@ -4,7 +4,7 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user");
 const Account = require("../models/account");
-const { Role } = require("../models/role");
+const { { Role, roleName } } = require("../models/role");
 
 const { getRole } = require("../util/roles");
 
@@ -31,7 +31,7 @@ exports.createUser = async (req, res, next) => {
     const existingRole = await Role.findOne({ name: role });
     if (!existingRole) {
       const error = new Error("Chức vụ không tồn tại");
-      error.statusCode = 422;
+      error.statusCode = 404;
       return next(error);
     }
 
@@ -134,3 +134,89 @@ exports.deleteSelectedUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.editUser = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error(errors.array()[0].msg);
+    error.statusCode = 422;
+    error.validationErrors = errors.array();
+    return next(error);
+  }
+
+  const userId = req.params.userId;
+  const { name, role, email, phone, address, gender } = req.body;
+
+  try {
+    const user = await User.findById(userId).populate("role");
+    if (!user) {
+      const error = new Error("User không tồn tại.");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    if (email !== user.email.toString()) {
+      const existingUser = await User.findOne({ email: email });
+      if (existingUser) {
+        const error = new Error("Email đã tồn tại");
+        error.statusCode = 409;
+        return next(error);
+      }
+    }
+
+    // Check if user is Owner so we can change role for this user
+    if (user.role.name === roleName.OWNER && user.role._id.toString() !== role.toString()) {
+      user.role._id = role;
+    }
+
+    user.name = name;
+    user.email = email;
+    user.phone = phone;
+    user.address = address;
+    user.gender = gender;
+    await user.save();
+
+    res.status(200).json({
+      message: "Thay đổi thông tin user thành công!"
+    });
+  } catch (err) {
+    next(err);
+  }  
+}
+
+exports.changePassword = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error(errors.array()[0].msg);
+    error.statusCode = 422;
+    error.validationErrors = errors.array();
+    return next(error);
+  }
+
+  const userId = req.params.userId;
+  const newPassword = req.body.newPassword;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("User không tồn tại.");
+      error.statusCode = 404;
+      return next(error);
+    }
+    
+    const account = await Account.findById(user.account);
+    if (!account) {
+      const error = new Error("Account không tồn tại.");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    const hashedPassword = bcryptjs.hashSync(newPassword);
+    account.password = hashedPassword;
+    await account.save();
+
+    res.status(200).json({ message: "Thay đổi mật khẩu thành công!"});
+  } catch (err) {
+    next(err);
+  }
+}
