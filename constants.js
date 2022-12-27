@@ -27,3 +27,10 @@ const tableStates = {
     READY: "Còn trống",
     USING: "Đang dùng",
 };
+
+module.exports = {
+    productStates, 
+    receiptStates,
+    roleNames,
+    tableStates
+}

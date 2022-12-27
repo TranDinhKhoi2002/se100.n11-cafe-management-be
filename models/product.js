@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const productState = {
-  ACTIVE: 'Đang bán',
-  PAUSE: 'Nghỉ bán'
-};
+const { productStates } = require("../constants");
 
 const productSchema = new Schema({
   category: {
@@ -26,10 +23,9 @@ const productSchema = new Schema({
   },
   state: {
     type: String,
-    enum: productState,
-    default: productState.ACTIVE,
+    enum: productStates,
+    default: productStates.ACTIVE,
   }
 });
 
-exports.Product = mongoose.model("Product", productSchema);
-exports.productState = productState;
+module.exports = mongoose.model("Product", productSchema);

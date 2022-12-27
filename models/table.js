@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const tableState = {
-  READY: "Còn trống",
-  USING: "Đang dùng",
-};
+const { tableStates } = require("../constants");
 
 const tableSchema = new Schema({
   name: {
@@ -17,10 +14,9 @@ const tableSchema = new Schema({
   },
   state: {
     type: String,
-    enum: ["Còn trống", "Đang dùng"],
-    default: "Còn trống",
+    enum: tableStates,
+    default: tableStates.READY,
   },
 });
 
-exports.Table = mongoose.model("Table", tableSchema);
-exports.tableState = tableState;
+module.exports = mongoose.model("Table", tableSchema);

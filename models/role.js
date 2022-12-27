@@ -1,19 +1,14 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const roleName = {
-  OWNER: "Chủ quán",
-  MANAGER: "Quản lý",
-  STAFF: "Nhân viên",
-};
+const { roleNames } = require("../constants");
 
 const roleSchema = new Schema({
   name: {
     type: String,
-    enum: roleName,
+    enum: roleNames,
     required: true,
   },
 });
 
-exports.Role = mongoose.model("Role", roleSchema);
-exports.roleName = roleName;
+module.exports = mongoose.model("Role", roleSchema);
