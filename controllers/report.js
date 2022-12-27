@@ -1,8 +1,8 @@
-const {receiptState, Receipt} = require("../models/receipt");
-const {categoryName, Category} = require("../models/category");
-const {productState, Product} = require("../models/product");
-const {roleName, Role} = require("../models/role");
+const Receipt = require("../models/receipt");
+const Category = require("../models/category");
+const Product = require("../models/product");
 const User = require("../models/user");
+const { receiptStates, productStates, roleNames } = require("../constants");
 
 exports.getReportByDate = async (req, res, next) => {
   try {
@@ -14,7 +14,7 @@ exports.getReportByDate = async (req, res, next) => {
     const nextDate = new Date(reportDate);
     nextDate.setDate(reportDate.getDate() + 1);
     nextDate.setHours(0,0,0,0);
-    const receipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: reportDate, $lt: nextDate}});
+    const receipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: reportDate, $lt: nextDate}});
     report.products = [];
     report.totalQuantity = 0;
     report.totalPrice = 0;
@@ -44,7 +44,7 @@ exports.getReportByDate = async (req, res, next) => {
         report.totalPrice = report.totalPrice + product.price * product.quantity;
       }
     }
-    const products = await Product.find({state: productState.ACTIVE}).populate("category");
+    const products = await Product.find({state: productStates.ACTIVE}).populate("category");
     const otherProducts = products.filter(product => !productInReceipts.includes(product._id.toString()));
     for(let product of otherProducts){
       report.products.push({
@@ -80,7 +80,7 @@ exports.getReportByMonth = async (req, res, next) => {
       const nextDate = new Date(currentDate);
       currentDate.setHours(0,0,0,0);
       nextDate.setHours(24,0,0,0);
-      const dateReceipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: currentDate, $lt: nextDate}});
+      const dateReceipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: currentDate, $lt: nextDate}});
       var totalPrice = 0;
       var totalQuantity = 0;
       for(let receipt of dateReceipts){
@@ -94,7 +94,7 @@ exports.getReportByMonth = async (req, res, next) => {
         totalQuantity: totalQuantity
       })
     }
-    const receipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: startDate, $lt: endDate}});
+    const receipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: startDate, $lt: endDate}});
     report.products = [];
     report.totalQuantity = 0;
     report.totalPrice = 0;
@@ -124,7 +124,7 @@ exports.getReportByMonth = async (req, res, next) => {
         report.totalPrice = report.totalPrice + product.price * product.quantity;
       }
     }
-    const products = await Product.find({state: productState.ACTIVE}).populate("category");
+    const products = await Product.find({state: productStates.ACTIVE}).populate("category");
     const otherProducts = products.filter(product => !productInReceipts.includes(product._id.toString()));
     for(let product of otherProducts){
       report.products.push({
@@ -162,7 +162,7 @@ exports.getReportByYear = async (req, res, next) => {
             const lastDate = new Date(year, month + 1, 0);
             firstDate.setHours(0,0,0,0);
             lastDate.setHours(24,0,0,0);
-            const monthReceipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: firstDate, $lt: lastDate}});
+            const monthReceipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: firstDate, $lt: lastDate}});
             var totalPrice = 0;
             var totalQuantity = 0;
             for(let receipt of monthReceipts){
@@ -198,16 +198,16 @@ exports.getStatistic = async (req, res, next) => {
         report.products = [];
         report.categories = [];
         const users = await User.find().populate("role");
-        const staffs = users.filter(user => user.role.name != roleName.OWNER);
+        const staffs = users.filter(user => user.role.name != roleNames.OWNER);
         report.staff = staffs.length;
-        const dateReceipts = await Receipt.find({state: receiptState.PAID, updatedAt: {$gte: currentDate, $lt: nextDate}});
+        const dateReceipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: currentDate, $lt: nextDate}});
         dateReceipts.forEach(receipt => {
           report.revenue += receipt.totalPrice;
           receipt.products.forEach(product => {
             report.quantity += product.quantity;
           })
         })
-        const receipts = await Receipt.find({state: receiptState.PAID});
+        const receipts = await Receipt.find({state: receiptStates.PAID});
         const productInReceipts = [];
         const categoryInReceipts = [];
         for(let receipt of receipts){
@@ -246,7 +246,7 @@ exports.getStatistic = async (req, res, next) => {
             }
           }
         }
-        const products = await Product.find({state: productState.ACTIVE});
+        const products = await Product.find({state: productStates.ACTIVE});
         const otherProducts = products.filter(product => !productInReceipts.includes(product._id.toString()));
         for(let product of otherProducts){
           report.products.push({

@@ -7,7 +7,7 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SG_API_KEY);
 
 const Account = require("../models/account");
-const { Role } = require("../models/role");
+const Role = require("../models/role");
 const User = require("../models/user");
 const { getRole } = require("../util/roles");
 

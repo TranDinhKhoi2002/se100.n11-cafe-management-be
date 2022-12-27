@@ -4,7 +4,9 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user");
 const Account = require("../models/account");
-const { Role, roleName } = require("../models/role");
+const Role = require("../models/role");
+const { roleNames, userStatus } = require("../constants");
+
 
 const { getRole } = require("../util/roles");
 
@@ -22,7 +24,7 @@ exports.createUser = async (req, res, next) => {
 
   try {
     const currentUserRole = await getRole(req.accountId);
-    if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
+    if (currentUserRole != roleNames.OWNER && currentUserRole != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên");
       error.statusCode = 401;
       return next(error);
@@ -73,7 +75,7 @@ exports.createUser = async (req, res, next) => {
 
 exports.getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({ status: "Đang làm" }).populate("role").populate("account");
+    const users = await User.find({ status: userStatus.ACTIVE }).populate("role").populate("account");
     res.status(200).json({ users });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
@@ -86,7 +88,7 @@ exports.deleteUser = async (req, res, next) => {
   const userId = req.params.userId;
   try {
     const currentUserRole = await getRole(req.accountId);
-    if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
+    if (currentUserRole != roleNames.OWNER && currentUserRole != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm nhân viên");
       error.statusCode = 401;
       return next(error);
@@ -99,7 +101,7 @@ exports.deleteUser = async (req, res, next) => {
       return next(error);
     }
 
-    user.status = "Đã nghỉ";
+    user.status = userStatus.NONACTIVE;
     await user.save();
 
     res.status(200).json({ message: "Xóa nhân viên thành công" });
@@ -123,7 +125,7 @@ exports.deleteSelectedUsers = async (req, res, next) => {
     const filteredUsers = await User.find({ _id: { $in: userIds } });
     for (let index = 0; index < filteredUsers.length; index++) {
       const currentUser = filteredUsers[index];
-      currentUser.status = "Đã nghỉ";
+      currentUser.status = userStatus.NONACTIVE;
       await currentUser.save();
     }
 
@@ -165,7 +167,7 @@ exports.editUser = async (req, res, next) => {
     }
 
     // Check if user is Owner so we can change role for this user
-    if (user.role.name === roleName.OWNER && user.role._id.toString() !== role.toString()) {
+    if (user.role.name === roleNames.OWNER && user.role._id.toString() !== role.toString()) {
       user.role._id = role;
     }
 

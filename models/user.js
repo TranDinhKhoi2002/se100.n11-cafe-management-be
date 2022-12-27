@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const { genders, userStatus } = require("../constants");
+
 const userSchema = new Schema({
   role: {
     type: Schema.Types.ObjectId,
@@ -30,7 +32,7 @@ const userSchema = new Schema({
   },
   gender: {
     type: String,
-    enum: ["Nam", "Nữ"],
+    enum: genders,
     required: true,
   },
   birthday: {
@@ -39,8 +41,8 @@ const userSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ["Đang làm", "Đã nghỉ"],
-    default: "Đang làm",
+    enum: userStatus,
+    default: userStatus.ACTIVE,
   },
 });
 

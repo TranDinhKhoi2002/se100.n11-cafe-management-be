@@ -1,15 +1,16 @@
 const { validationResult } = require("express-validator");
 const { faker } = require("@faker-js/faker");
 
-const { Receipt, receiptState } = require("../models/receipt");
-const { Product } = require("../models/product");
-const { Table, tableState } = require("../models/table");
+const Receipt = require("../models/receipt");
+const Product = require("../models/product");
+const Table = require("../models/table");
 const { getRole } = require("../util/roles");
+const { receiptStates, tableStates, roleNames} = require("../constants");
 
 exports.getReceipts = async (req, res, next) => {
   try {
     const role = await getRole(req.accountId);
-    if (role !== "Chủ quán" && role !== "Quản lý" && role !== "Nhân viên") {
+    if (Object.values(roleNames).includes(role)) {
       const error = new Error("Chỉ có nội bộ quán mới được xem danh sách hóa đơn");
       error.statusCode = 401;
       return next(error);
@@ -46,7 +47,7 @@ exports.createReceipt = async (req, res, next) => {
       }
 
       currentTable.receipt = receiptId;
-      currentTable.state = "Đang dùng";
+      currentTable.state = tableStates.USING;
       await currentTable.save();
     });
 
@@ -113,7 +114,7 @@ exports.editReceipt = async (req, res, next) => {
   const receiptId = req.params.receiptId;
   try {
     const role = await getRole(req.accountId);
-    if (role !== "Chủ quán" && role !== "Quản lý") {
+    if (role !== roleNames.OWNER && role !== roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán và quản lý mới có thể chỉnh sửa hóa đơn");
       error.statusCode = 401;
       return next(error);
@@ -152,13 +153,13 @@ exports.removeReceipt = async (req, res, next) => {
 
     updatedReceipt.tables.forEach(async (tableId) => {
       const currentTable = await Table.findById(tableId);
-      currentTable.state = tableState.READY;
+      currentTable.state = tableStates.READY;
       currentTable.receipt = undefined;
       await currentTable.save();
     });
 
-    if (updatedReceipt.state !== receiptState.CANCLED) {
-      updatedReceipt.state = receiptState.CANCLED;
+    if (updatedReceipt.state !== receiptStates.CANCLED) {
+      updatedReceipt.state = receiptStates.CANCLED;
     }
     await updatedReceipt.save();
     res.status(200).json({ message: "Đã huỷ hoá đơn" });
@@ -180,18 +181,18 @@ exports.payForReceipt = async (req, res, next) => {
       return next(error);
     }
 
-    if (receipt.state === receiptState.CANCLED) {
+    if (receipt.state === receiptStates.CANCLED) {
       const error = new Error("Hoá đơn đã bị huỷ");
       error.statusCode = 422;
       return next(error);
     }
 
-    if (receipt.state !== receiptState.PAID) {
-      receipt.state = receiptState.PAID;
+    if (receipt.state !== receiptStates.PAID) {
+      receipt.state = receiptStates.PAID;
 
       receipt.tables.forEach(async (table) => {
         const currentTable = await Table.findById(table);
-        currentTable.state = "Còn trống";
+        currentTable.state = tableStates.READY;
         currentTable.receipt = undefined;
         await currentTable.save();
       });

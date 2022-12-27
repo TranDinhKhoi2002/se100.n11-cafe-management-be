@@ -28,9 +28,22 @@ const tableStates = {
     USING: "Đang dùng",
 };
 
+// User: Gender & Status
+const genders = {
+    MALE: "Name",
+    FEMALE: "Nữ"
+};
+
+const userStatus = {
+    ACTIVE: "Đang làm",
+    NONACTIVE: "Đã nghỉ"
+};
+
 module.exports = {
     productStates, 
     receiptStates,
     roleNames,
-    tableStates
+    tableStates,
+    genders,
+    userStatus
 }
