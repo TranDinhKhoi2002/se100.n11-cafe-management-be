@@ -329,11 +329,18 @@ exports.getReportByDay = async (req, res, next) => {
 }
 
 exports.getReportByMonth = async (req, res, next) => {
+  // check role
+  const role = await getRole(req.accountId);
+  if (role !== roleNames.OWNER) {
+    const error = new Error("Chỉ có chủ quán mới được xem báo cáo!");
+    error.statusCode = 401;
+    return next(error);
+  }
+
   const { month, year } = req.body;
 
   const startDate = new Date(year, month - 1);
   const endDate = new Date(year, month, 1);
-  startDate.ge
   try {
     const report = {};
     report.month = `${month}/${year}`;
@@ -369,8 +376,16 @@ exports.getReportByMonth = async (req, res, next) => {
 }
 
 exports.getReportByYear = async (req, res, next) => {
-  const year = req.body.year;
+  // check role
+  const role = await getRole(req.accountId);
+  if (role !== roleNames.OWNER) {
+    const error = new Error("Chỉ có chủ quán mới được xem báo cáo!");
+    error.statusCode = 401;
+    return next(error);
+  }
   
+  const year = req.body.year;
+
   const report = {};
   const firstDate = new Date(year);
   const firstDateOfNextYear = new Date((+year+1).toString());
