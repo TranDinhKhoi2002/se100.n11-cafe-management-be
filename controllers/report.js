@@ -4,6 +4,7 @@ const Product = require("../models/product");
 const User = require("../models/user");
 const { receiptStates, productStates, roleNames } = require("../constants");
 const { getRole } = require("../util/roles");
+const { getProductsInfoByReceipts } = require("../util/report");
 
 exports.getReportByDate = async (req, res, next) => {
   try {
@@ -271,7 +272,7 @@ exports.getStatistic = async (req, res, next) => {
         report.products.sort((a, b) => a.quantity - b.quantity);
         report.categories.sort((a, b) => a.totalPrice - b.totalPrice);
         res.status(200).json({ report });
-    } catch(err) {
+    } catch (err) {
         const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");
         error.statusCode = 500;
         next(error);
@@ -295,62 +296,33 @@ exports.getReportByDayV2 = async (req, res, next) => {
 
   try {
     // get receipts paid on the day
-    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: startDate, $lt: endDate }});
-  
+    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: startDate, $lt: endDate }})
+      .populate({
+        path: 'products',
+        populate: {
+          path: 'product',
+          select: 'category',
+          populate: {
+            path: 'category',
+            select: 'name',
+          }
+        }
+      });
+    
+    // get product info by receipts
+    const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
+
     const report = {};
     report.date = `${day}/${month}/${year}`;
-    report.totalSales = 0;
-    report.totalRevenue = 0;
-    
-    // get all product in receipts
-    const productsTmp = receipts.reduce((res, receipt) => {
-      report.totalRevenue += receipt.totalPrice;
-      return [...res, ...receipt.products];
-    }, []);
-    const products = {};
-    for (const prod of productsTmp) {
-        const prodId = prod.product._id.toString();
-        if (!products[prodId]) {
-          const product = await Product.findById(prodId).populate('category', 'name');
-          products[prodId] = {
-            _id: prodId,
-            name: prod.name,
-            category: product.category.name,
-            price: prod.price,
-            sales: prod.quantity,
-            revenue: prod.price * prod.quantity
-          };
-        } else {
-          products[prodId].sales += prod.quantity;
-          products[prodId].revenue += prod.price * prod.quantity;
-        }
-      
-        report.totalSales += prod.quantity;
-    }
+    report.totalSales = totalSales;
+    report.totalRevenue = totalRevenue;
 
     // sort by ascending sales
-    const productsInReceipts = Object.values(products).sort((a, b) => a.sales - b.sales);
+    products.sort((a, b) => a.sales - b.sales);
 
-    // get remaining active product that sales = 0
-    const productIdsInReceipts = Object.keys(products);
-    let remainingProducts = await Product.find({ 
-      state: productStates.ACTIVE,
-      _id: { $nin: productIdsInReceipts } 
-    })
-    .populate('category', 'name');
-    remainingProducts = remainingProducts.map(prod => ({
-      _id: prod._id.toString(),
-      name: prod.name,
-      category: prod.category.name,
-      price: prod.price,
-      sales: 0,
-      revenue: 0
-    }));
-
-    report.products = [...remainingProducts, ...productsInReceipts];
+    report.products = [...remainingProducts, ...products];
 
     res.status(200).json({report});
-    
   } catch (err) {
     next(err);
   }
