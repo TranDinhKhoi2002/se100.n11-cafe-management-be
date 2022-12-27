@@ -11,6 +11,4 @@ router.post("/report-by-year", isAuth, reportController.getReportByYear);
 
 router.get("/dashboard", isAuth, reportController.getStatistic);
 
-router.post("/test", reportController.getReportByYear);
-
 module.exports = router;
