@@ -49,6 +49,15 @@ exports.getProductsInfoByReceipts = async (receipts) => {
   return { products , remainingProducts, totalSales, totalRevenue };
 };
 
-exports.getDailyReport = async (startDate, endDate) => {
-    
+exports.getDailyReport = (startDate, endDate, receipts) => {
+    const dailyReport = {};
+    for (const currDate = startDate; currDate < endDate; currDate.setDate(currDate.getDate() + 1)) {
+        dailyReport[currDate.getDate()] = { revenue: 0, sales: 0 };
+    }
+    for (const receipt of receipts) {
+        dailyReport[receipt.updatedAt.getDate()].revenue += receipt.totalPrice;
+        dailyReport[receipt.updatedAt.getDate()].sales += receipt.products.reduce((res, prod) => res + prod.quantity, 0);
+    }
+
+    return dailyReport;
 }
