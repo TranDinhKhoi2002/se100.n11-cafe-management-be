@@ -3,6 +3,7 @@ const Category = require("../models/category");
 const Product = require("../models/product");
 const User = require("../models/user");
 const { receiptStates, productStates, roleNames } = require("../constants");
+const { getRole } = require("../util/roles");
 
 exports.getReportByDate = async (req, res, next) => {
   try {
@@ -275,4 +276,82 @@ exports.getStatistic = async (req, res, next) => {
         error.statusCode = 500;
         next(error);
     }
+}
+
+exports.getReportByDayV2 = async (req, res, next) => {
+  // check role
+  const role = await getRole(req.accountId);
+  if (role !== roleNames.OWNER) {
+    const error = new Error("Chỉ có chủ quán mới được xem báo cáo!");
+    error.statusCode = 401;
+    return next(error);
+  }
+
+  const { day, month, year } = req.body;
+  const startDate = new Date(year, month - 1, day);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 1);
+
+  try {
+    // get receipts paid on the day
+    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: startDate, $lt: endDate }});
+  
+    const report = {};
+    report.date = `${day}/${month}/${year}`;
+    report.totalSales = 0;
+    report.totalRevenue = 0;
+    
+    // get all product in receipts
+    const productsTmp = receipts.reduce((res, receipt) => {
+      report.totalRevenue += receipt.totalPrice;
+      return [...res, ...receipt.products];
+    }, []);
+    const products = {};
+    for (const prod of productsTmp) {
+        const prodId = prod.product._id.toString();
+        if (!products[prodId]) {
+          const product = await Product.findById(prodId).populate('category', 'name');
+          products[prodId] = {
+            _id: prodId,
+            name: prod.name,
+            category: product.category.name,
+            price: prod.price,
+            sales: prod.quantity,
+            revenue: prod.price * prod.quantity
+          };
+        } else {
+          products[prodId].sales += prod.quantity;
+          products[prodId].revenue += prod.price * prod.quantity;
+        }
+      
+        report.totalSales += prod.quantity;
+    }
+
+    // sort by ascending sales
+    const productsInReceipts = Object.values(products).sort((a, b) => a.sales - b.sales);
+
+    // get remaining active product that sales = 0
+    const productIdsInReceipts = Object.keys(products);
+    let remainingProducts = await Product.find({ 
+      state: productStates.ACTIVE,
+      _id: { $nin: productIdsInReceipts } 
+    })
+    .populate('category', 'name');
+    remainingProducts = remainingProducts.map(prod => ({
+      _id: prod._id.toString(),
+      name: prod.name,
+      category: prod.category.name,
+      price: prod.price,
+      sales: 0,
+      revenue: 0
+    }));
+
+    report.products = [...remainingProducts, ...productsInReceipts];
+
+    res.status(200).json({report});
+    
+  } catch (err) {
+    next(err);
+  }
 }
