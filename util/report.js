@@ -61,3 +61,16 @@ exports.getDailyReport = (startDate, endDate, receipts) => {
 
     return dailyReport;
 }
+
+exports.getMonthlyReport = (startMonth, endMonth, receipts) => {
+    const monthlyReport = {};
+    for (let month = startMonth; month <= endMonth; month++) {
+        monthlyReport[month] = { revenue: 0, sales: 0 };
+    }
+    for (const receipt of receipts) {
+        monthlyReport[receipt.updatedAt.getMonth() + 1].revenue += receipt.totalPrice;
+        monthlyReport[receipt.updatedAt.getMonth() + 1].sales += receipt.products.reduce((res, prod) => res + prod.quantity, 0);
+    }
+
+    return monthlyReport;
+}
