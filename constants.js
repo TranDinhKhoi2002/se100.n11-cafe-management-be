@@ -2,14 +2,6 @@
  * Define enum for models
  */
 
-// Categorty Names
-const categoryNames = {
-    COFFEE: "Cà phê",
-    TEA: "Trà",
-    SNACK: "Đồ ăn vặt",
-    OTHER: "Khác",
-};
-
 // Product States
 const productStates = {
     ACTIVE: 'Đang bán',
@@ -17,7 +9,7 @@ const productStates = {
 };
 
 // Receipt States
-const receiptState = {
+const receiptStates = {
     UNPAID: "Chưa thanh toán",
     PAID: "Đã thanh toán",
     CANCLED: "Đã hủy",
