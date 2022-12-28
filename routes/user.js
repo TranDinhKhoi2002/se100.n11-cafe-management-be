@@ -10,6 +10,7 @@ router.post(
   "/users",
   isAuth,
   [
+    body("role", "Chức vụ không được để trống").notEmpty(),
     body("name", "Tên không được để trống").trim().notEmpty(),
     body("address", "Địa chỉ không được để trống").trim().notEmpty(),
     body("email")
@@ -45,21 +46,14 @@ router.delete("/users/:userId", isAuth, userController.deleteUser);
 router.put("/users", isAuth, userController.deleteSelectedUsers);
 
 router.put(
-  "/users/:userId/edit",
+  "/users/edit/:userId",
   isAuth,
   [
-    body("role").notEmpty().isMongoId(),
+    body("role", "Chức vụ không được để trống").notEmpty(),
     body("name", "Tên không được để trống").trim().notEmpty(),
+    body("email").isEmail().withMessage("Email không hợp lệ").normalizeEmail(),
     body("address", "Địa chỉ không được để trống").trim().notEmpty(),
-    body("phone", "Số điện thoại không hợp lệ")
-      .isMobilePhone("vi-VN")
-      .custom((value, { req }) => {
-        return User.findOne({ phone: value }).then((userDoc) => {
-          if (userDoc) {
-            return Promise.reject("Số điện thoại đã được sử dụng");
-          }
-        });
-      }),
+    body("phone", "Số điện thoại không hợp lệ").isMobilePhone("vi-VN"),
     body("gender", "Giới tính không hợp lệ").isIn(["Nam", "Nữ"]),
     body("birthday", "Ngày sinh không hợp lệ").isISO8601(),
   ],

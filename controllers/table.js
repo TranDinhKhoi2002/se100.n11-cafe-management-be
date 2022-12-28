@@ -228,7 +228,7 @@ exports.mergeTable = async (req, res, next) => {
 
 exports.getTables = async (req, res, next) => {
   try {
-    const tables = await Table.find().populate("receipt");
+    const tables = await Table.find().populate({ path: "receipt", populate: { path: "tables" } });
 
     res.status(200).json({ tables });
   } catch (err) {

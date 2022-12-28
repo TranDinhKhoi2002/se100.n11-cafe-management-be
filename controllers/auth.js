@@ -150,6 +150,7 @@ exports.resetPassword = async (req, res, next) => {
 
 exports.changePassword = async (req, res, next) => {
   const { password: newPassword, passwordToken, accountId } = req.body;
+  console.log(newPassword, passwordToken, accountId);
 
   try {
     const account = await Account.findOne({

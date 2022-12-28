@@ -28,7 +28,7 @@ exports.getData = async (req, res, next) => {
   try {
     const products = await Product.find({ state: productStates.ACTIVE }).populate("category");
     const categories = await Category.find();
-    const user = await User.findOne({ account: req.accountId }).populate("role");
+    const user = await User.findOne({ account: req.accountId }).populate("role").populate("account");
 
     res.status(200).json({ products, categories, user });
   } catch (err) {

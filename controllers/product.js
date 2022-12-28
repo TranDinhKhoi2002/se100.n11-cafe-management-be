@@ -1,8 +1,9 @@
 const { validationResult } = require("express-validator");
 const Product = require("../models/product");
+const { Category } = require("../models/category");
 
 const { getRole } = require("../util/roles");
-const { roleNames, productStates } =  require("../constants");
+const { roleNames, productStates } = require("../constants");
 
 exports.createProduct = async (req, res, next) => {
   const errors = validationResult(req);
@@ -119,6 +120,9 @@ exports.deleteProduct = async (req, res, next) => {
 
     _product.state = productStates.PAUSE;
     await _product.save();
+
+    const category = await Category.findById(_product.category);
+    category.products.pull(_product._id);
     res.status(200).json({ message: "Xoá sản phẩm thành công" });
   } catch (err) {
     const error = new Error("Có lỗi xảy ra, vui lòng thử lại sau");

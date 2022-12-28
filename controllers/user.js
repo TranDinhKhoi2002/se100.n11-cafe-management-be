@@ -4,9 +4,7 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user");
 const Account = require("../models/account");
-const Role = require("../models/role");
-const { roleNames, userStatus } = require("../constants");
-
+const { Role, roleName } = require("../models/role");
 
 const { getRole } = require("../util/roles");
 
@@ -147,12 +145,19 @@ exports.editUser = async (req, res, next) => {
   }
 
   const userId = req.params.userId;
-  const { name, role, email, phone, address, gender } = req.body;
+  const { name, role, email, phone, address, gender, birthday } = req.body;
 
   try {
+    const currentUserRole = await getRole(req.accountId);
+    if (currentUserRole != "Quản lý" && currentUserRole != "Chủ quán") {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa thông tin nhân viên");
+      error.statusCode = 401;
+      return next(error);
+    }
+
     const user = await User.findById(userId).populate("role");
     if (!user) {
-      const error = new Error("User không tồn tại.");
+      const error = new Error("Người dùng không tồn tại.");
       error.statusCode = 404;
       return next(error);
     }
@@ -166,9 +171,11 @@ exports.editUser = async (req, res, next) => {
       }
     }
 
-    // Check if user is Owner so we can change role for this user
-    if (user.role.name === roleNames.OWNER && user.role._id.toString() !== role.toString()) {
-      user.role._id = role;
+    const existingRole = await Role.findOne({ name: role });
+    if (!existingRole) {
+      const error = new Error("Chức vụ không tồn tại");
+      error.statusCode = 404;
+      return next(error);
     }
 
     user.name = name;
@@ -176,15 +183,20 @@ exports.editUser = async (req, res, next) => {
     user.phone = phone;
     user.address = address;
     user.gender = gender;
+    user.birthday = birthday;
+    user.role = existingRole._id;
     await user.save();
 
-    res.status(200).json({
-      message: "Thay đổi thông tin user thành công!"
+    const updatedUser = await user.populate("role");
+
+    res.status(201).json({
+      message: "Cập nhật thông tin thành công",
+      user: updatedUser,
     });
   } catch (err) {
     next(err);
-  }  
-}
+  }
+};
 
 exports.changePassword = async (req, res, next) => {
   const errors = validationResult(req);
@@ -205,7 +217,7 @@ exports.changePassword = async (req, res, next) => {
       error.statusCode = 404;
       return next(error);
     }
-    
+
     const account = await Account.findById(user.account);
     if (!account) {
       const error = new Error("Account không tồn tại.");
@@ -217,8 +229,8 @@ exports.changePassword = async (req, res, next) => {
     account.password = hashedPassword;
     await account.save();
 
-    res.status(200).json({ message: "Thay đổi mật khẩu thành công!"});
+    res.status(200).json({ message: "Thay đổi mật khẩu thành công!" });
   } catch (err) {
     next(err);
   }
-}
+};

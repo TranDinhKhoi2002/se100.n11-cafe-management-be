@@ -3,7 +3,9 @@
     "MONGO_USER": "dinhnghia",
     "MONGO_PASSWORD": "SDEcPc5R2J86Zspq",
     "MONGO_DATABASE": "coffee-app",
-    "SG_API_KEY": "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",
+    "SG_API_KEY": "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",
+    "SG_RESET_PASSWORD_TEMPLATE_ID": "d-7c35b4f9d4fc4ce785dabd97e7f64482",
+    "SG_SEND_PASSWORD_TEMPLATE_ID": "d-07c2ba6d1fd74da1b253292172cfcc8a",
     "SG_TEMPLATE_ID": "d-3cc682a534ca49c6bb7bca00f76555a3"
   }
 }
