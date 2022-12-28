@@ -2,7 +2,7 @@ const Receipt = require("../models/receipt");
 const Category = require("../models/category");
 const Product = require("../models/product");
 const User = require("../models/user");
-const { receiptStates, productStates, roleNames } = require("../constants");
+const { receiptStates, roleNames } = require("../constants");
 const { getRole } = require("../util/roles");
 const { getProductsInfoByReceipts, getDailyReport, getMonthlyReport } = require("../util/report");
 
@@ -317,7 +317,7 @@ exports.getReportByDay = async (req, res, next) => {
     report.totalSales = totalSales;
     report.totalRevenue = totalRevenue;
 
-    // sort by ascending sales
+    // sort by descending sales
     products.sort((a, b) => b.sales - a.sales);
 
     report.products = [...products, ...remainingProducts];
@@ -362,7 +362,7 @@ exports.getReportByMonth = async (req, res, next) => {
     // get product info by receipts
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
 
-    // sort by ascending sales
+    // sort by descending sales
     products.sort((a, b) => b.sales - a.sales);
 
     report.products = [...products, ...remainingProducts];
@@ -424,11 +424,12 @@ exports.getStatistic = async (req, res, next) => {
 
   try {
     const report = {};
-    report.date = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+    report.currentDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
     report.numberOfStaff = (await User.find().countDocuments()) - 1; // except 1 Owner
 
+    // INFOMATION OF CURRENT DATE
     // get receipts paid on the day
-    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: currentDate, $lt: nextDate }})
+    const receiptsInCurrentDate = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: currentDate, $lt: nextDate }})
       .populate({
         path: 'products',
         populate: {
@@ -441,6 +442,26 @@ exports.getStatistic = async (req, res, next) => {
         }
       });
       
+    // get product info by receipts paid on current day
+    const { totalSales: salesInCurrentDate, totalRevenue: revenueInCurrentDate } = await getProductsInfoByReceipts(receiptsInCurrentDate);
+
+    report.currentDateData = { salesInCurrentDate, revenueInCurrentDate };
+    
+
+    // INFOMATION FOR ALL PAID RECEIPTS
+    // get all paid receipts
+    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $lt: nextDate }})
+      .populate({
+        path: 'products',
+        populate: {
+          path: 'product',
+          select: 'category',
+          populate: {
+            path: 'category',
+            select: 'name',
+          }
+        }
+      });
     // get product info by receipts
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
     
@@ -464,11 +485,8 @@ exports.getStatistic = async (req, res, next) => {
       return res;
     }, {});
     report.categories = Object.values(categories);
-    
-    report.totalSales = totalSales;
-    report.totalRevenue = totalRevenue;
 
-    // sort by ascending sales
+    // sort by descending sales
     products.sort((a, b) => b.sales - a.sales);
 
     report.products = [...products, ...remainingProducts];

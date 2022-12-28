@@ -4,9 +4,10 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user");
 const Account = require("../models/account");
-const { Role, roleName } = require("../models/role");
+const Role = require("../models/role");
 
 const { getRole } = require("../util/roles");
+const { roleNames } = require("../constants");
 
 sgMail.setApiKey(process.env.SG_API_KEY);
 
