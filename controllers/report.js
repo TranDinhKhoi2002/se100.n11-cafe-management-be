@@ -318,9 +318,9 @@ exports.getReportByDay = async (req, res, next) => {
     report.totalRevenue = totalRevenue;
 
     // sort by ascending sales
-    products.sort((a, b) => a.sales - b.sales);
+    products.sort((a, b) => b.sales - a.sales);
 
-    report.products = [...remainingProducts, ...products];
+    report.products = [...products, ...remainingProducts];
 
     res.status(200).json({report});
   } catch (err) {
@@ -363,9 +363,9 @@ exports.getReportByMonth = async (req, res, next) => {
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
 
     // sort by ascending sales
-    products.sort((a, b) => a.sales - b.sales);
+    products.sort((a, b) => b.sales - a.sales);
 
-    report.products = [...remainingProducts, ...products];
+    report.products = [...products, ...remainingProducts];
     report.totalSales = totalSales;
     report.totalRevenue = totalRevenue;
 
@@ -388,7 +388,7 @@ exports.getReportByYear = async (req, res, next) => {
 
   const report = {};
   const firstDate = new Date(year);
-  const firstDateOfNextYear = new Date((+year+1).toString());
+  const firstDateOfNextYear = new Date(year+1);
 
   try {
     const receipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: firstDate, $lt: firstDateOfNextYear}});
@@ -469,9 +469,9 @@ exports.getStatistic = async (req, res, next) => {
     report.totalRevenue = totalRevenue;
 
     // sort by ascending sales
-    products.sort((a, b) => a.sales - b.sales);
+    products.sort((a, b) => b.sales - a.sales);
 
-    report.products = [...remainingProducts, ...products];
+    report.products = [...products, ...remainingProducts];
 
     res.status(200).json({ report });
   } catch (err) {
