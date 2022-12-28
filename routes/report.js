@@ -3,7 +3,7 @@ const router = express.Router();
 const isAuth = require("../middleware/is-auth");
 const reportController = require("../controllers/report");
 
-router.post("/report-by-date", isAuth, reportController.getReportByDate);
+router.post("/report-by-day", isAuth, reportController.getReportByDay);
 
 router.post("/report-by-month", isAuth, reportController.getReportByMonth);
 

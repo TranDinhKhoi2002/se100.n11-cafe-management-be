@@ -1,7 +1,8 @@
 const { validationResult } = require("express-validator");
-const { Table, tableState } = require("../models/table");
-const { Receipt } = require("../models/receipt");
+const Table = require("../models/table");
+const Receipt = require("../models/receipt");
 const { faker } = require("@faker-js/faker");
+const { tableStates, roleNames } = require("../constants");
 
 const { getRole } = require("../util/roles");
 
@@ -17,7 +18,7 @@ exports.createTable = async (req, res, next) => {
   const { name } = req.body;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
+    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được thêm bàn");
       error.statusCode = 401;
       return next(error);
@@ -79,7 +80,7 @@ exports.deleteTable = async (req, res, next) => {
   const tableId = req.params.tableId;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
+    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa bàn");
       error.statusCode = 401;
       return next(error);
@@ -91,7 +92,7 @@ exports.deleteTable = async (req, res, next) => {
       return next(error);
     }
 
-    if (_table.state == "Đang dùng" || _table.receipt) {
+    if (_table.state == tableStates.USING || _table.receipt) {
       const error = new Error("Không thể xóa bàn đang được sử dụng");
       error.statusCode = 422;
       return next(error);
@@ -125,7 +126,7 @@ exports.moveTable = async (req, res, next) => {
     }
 
     targetedTable.receipt = movedTable.receipt;
-    targetedTable.state = tableState.USING;
+    targetedTable.state = tableStates.USING;
     await targetedTable.save();
 
     const currentReceipt = await Receipt.findById(movedTable.receipt);
@@ -140,7 +141,7 @@ exports.moveTable = async (req, res, next) => {
     await currentReceipt.save();
 
     movedTable.receipt = undefined;
-    movedTable.state = tableState.READY;
+    movedTable.state = tableStates.READY;
     await movedTable.save();
 
     res.status(200).json({ message: "Chuyển bàn thành công" });
@@ -197,7 +198,7 @@ exports.mergeTable = async (req, res, next) => {
         await Receipt.findByIdAndRemove(currentTable.receipt);
       }
 
-      currentTable.state = tableState.USING;
+      currentTable.state = tableStates.USING;
       currentTable.receipt = newReceiptId;
       await currentTable.save();
     }

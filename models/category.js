@@ -1,13 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const categoryName = {
-  COFFEE: "Cà phê",
-  TEA: "Trà",
-  SNACK: "Đồ ăn vặt",
-  OTHER: "Khác",
-};
-
 const categorySchema = new Schema({
   name: {
     type: String,
@@ -16,5 +9,4 @@ const categorySchema = new Schema({
   products: [{ type: Schema.Types.ObjectId, ref: "Product", required: true }],
 });
 
-exports.Category = mongoose.model("Category", categorySchema);
-exports.categoryName = categoryName;
+module.exports = mongoose.model("Category", categorySchema);

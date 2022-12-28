@@ -1,9 +1,10 @@
-const { Category } = require("../models/category");
-const { Product } = require("../models/product");
-const { Role } = require("../models/role");
-const { Receipt } = require("../models/receipt");
+const Category = require("../models/category");
+const Product = require("../models/product");
+const Role = require("../models/role");
+const Receipt = require("../models/receipt");
 const User = require("../models/user");
-const { Table } = require("../models/table");
+const Table = require("../models/table");
+const { productStates } = require("../constants");
 
 exports.getDataForSelectBox = async (req, res, next) => {
   try {
@@ -25,7 +26,7 @@ exports.getDataForSelectBox = async (req, res, next) => {
 
 exports.getData = async (req, res, next) => {
   try {
-    const products = await Product.find({ state: "Đang bán" }).populate("category");
+    const products = await Product.find({ state: productStates.ACTIVE }).populate("category");
     const categories = await Category.find();
     const user = await User.findOne({ account: req.accountId }).populate("role").populate("account");
 

@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { Category } = require("../models/category");
+const Category = require("../models/category");
 const { getRole } = require("../util/roles");
 
 exports.updateCategory = async (req, res, next) => {
@@ -15,7 +15,7 @@ exports.updateCategory = async (req, res, next) => {
   const categoryId = req.params.categoryId;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
+    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa danh mục");
       error.statusCode = 401;
       return next(error);
@@ -52,7 +52,7 @@ exports.deleteCategory = async (req, res, next) => {
   const categoryId = req.params.categoryId;
   try {
     const role = await getRole(req.accountId);
-    if (role != "Chủ quán" && role != "Quản lý") {
+    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
       const error = new Error("Chỉ có chủ quán hoặc quản lý mới được xóa sản phẩm");
       error.statusCode = 401;
       return next(error);
