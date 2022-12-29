@@ -9,6 +9,7 @@ const Role = require("../models/role");
 const { roleNames, userStatus } = require("../constants");
 
 const { getRole } = require("../util/roles");
+const { roleNames } = require("../constants");
 
 sgMail.setApiKey(process.env.SG_API_KEY);
 
