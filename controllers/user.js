@@ -4,7 +4,9 @@ const bcryptjs = require("bcryptjs");
 
 const User = require("../models/user");
 const Account = require("../models/account");
-const { Role, roleName } = require("../models/role");
+const Role = require("../models/role");
+
+const { roleNames, userStatus } = require("../constants");
 
 const { getRole } = require("../util/roles");
 
@@ -56,7 +58,7 @@ exports.createUser = async (req, res, next) => {
 
     sgMail.send({
       to: email,
-      from: "trandinhkhoi102@gmail.com",
+      from: "20520224@gm.uit.edu.vn",
       templateId: process.env.SG_SEND_PASSWORD_TEMPLATE_ID,
       dynamicTemplateData: {
         randomPassword,

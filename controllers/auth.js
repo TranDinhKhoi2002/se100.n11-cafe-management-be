@@ -129,7 +129,7 @@ exports.resetPassword = async (req, res, next) => {
 
       sgMail.send({
         to: req.body.email,
-        from: "trandinhkhoi102@gmail.com",
+        from: "20520224@gm.uit.edu.vn",
         templateId: process.env.SG_RESET_PASSWORD_TEMPLATE_ID,
         dynamicTemplateData: {
           token: token,

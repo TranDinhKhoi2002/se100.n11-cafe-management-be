@@ -296,19 +296,21 @@ exports.getReportByDay = async (req, res, next) => {
 
   try {
     // get receipts paid on the day
-    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: startDate, $lt: endDate }})
-      .populate({
-        path: 'products',
+    const receipts = await Receipt.find({
+      state: receiptStates.PAID,
+      updatedAt: { $gte: startDate, $lt: endDate },
+    }).populate({
+      path: "products",
+      populate: {
+        path: "product",
+        select: "category",
         populate: {
-          path: 'product',
-          select: 'category',
-          populate: {
-            path: 'category',
-            select: 'name',
-          }
-        }
-      });
-    
+          path: "category",
+          select: "name",
+        },
+      },
+    });
+
     // get product info by receipts
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
 
@@ -322,11 +324,11 @@ exports.getReportByDay = async (req, res, next) => {
 
     report.products = [...products, ...remainingProducts];
 
-    res.status(200).json({report});
+    res.status(200).json({ report });
   } catch (err) {
     next(err);
   }
-}
+};
 
 exports.getReportByMonth = async (req, res, next) => {
   // check role
@@ -344,21 +346,23 @@ exports.getReportByMonth = async (req, res, next) => {
   try {
     const report = {};
     report.month = `${month}/${year}`;
-    const receipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: startDate, $lt: endDate}})
-      .populate({
-        path: 'products',
+    const receipts = await Receipt.find({
+      state: receiptStates.PAID,
+      updatedAt: { $gte: startDate, $lt: endDate },
+    }).populate({
+      path: "products",
+      populate: {
+        path: "product",
+        select: "category",
         populate: {
-          path: 'product',
-          select: 'category',
-          populate: {
-            path: 'category',
-            select: 'name',
-          }
-        }
-      });
+          path: "category",
+          select: "name",
+        },
+      },
+    });
 
     report.dailyReport = getDailyReport(startDate, endDate, receipts);
-    
+
     // get product info by receipts
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
 
@@ -373,7 +377,7 @@ exports.getReportByMonth = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
 
 exports.getReportByYear = async (req, res, next) => {
   // check role
@@ -387,11 +391,14 @@ exports.getReportByYear = async (req, res, next) => {
   const year = req.body.year;
 
   const report = {};
-  const firstDate = new Date(year);
-  const firstDateOfNextYear = new Date(year+1);
+  const firstDate = new Date(year.toString());
+  const firstDateOfNextYear = new Date((year + 1).toString());
 
   try {
-    const receipts = await Receipt.find({state: receiptStates.PAID, updatedAt: {$gte: firstDate, $lt: firstDateOfNextYear}});
+    const receipts = await Receipt.find({
+      state: receiptStates.PAID,
+      updatedAt: { $gte: firstDate, $lt: firstDateOfNextYear },
+    });
     report.monthlyReport = getMonthlyReport(1, 12, receipts);
 
     report.totalRevenue = 0;
@@ -406,7 +413,7 @@ exports.getReportByYear = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
 
 exports.getStatistic = async (req, res, next) => {
   // check role
@@ -428,22 +435,24 @@ exports.getStatistic = async (req, res, next) => {
     report.numberOfStaff = (await User.find().countDocuments()) - 1; // except 1 Owner
 
     // get receipts paid on the day
-    const receipts = await Receipt.find({ state: receiptStates.PAID, updatedAt: { $gte: currentDate, $lt: nextDate }})
-      .populate({
-        path: 'products',
+    const receipts = await Receipt.find({
+      state: receiptStates.PAID,
+      updatedAt: { $gte: currentDate, $lt: nextDate },
+    }).populate({
+      path: "products",
+      populate: {
+        path: "product",
+        select: "category",
         populate: {
-          path: 'product',
-          select: 'category',
-          populate: {
-            path: 'category',
-            select: 'name',
-          }
-        }
-      });
-      
+          path: "category",
+          select: "name",
+        },
+      },
+    });
+
     // get product info by receipts
     const { products, remainingProducts, totalSales, totalRevenue } = await getProductsInfoByReceipts(receipts);
-    
+
     const tmpProducts = products.reduce((res, product) => {
       res[product._id] = { sales: product.sales, revenue: product.revenue };
       return res;
@@ -454,17 +463,17 @@ exports.getStatistic = async (req, res, next) => {
     let categories = await Category.find();
     categories = categories.reduce((res, category) => {
       res[category.name] = { name: category.name, revenue: 0, sales: 0 };
-      category.products.forEach(prod => {
+      category.products.forEach((prod) => {
         if (tmpProductIds.includes(prod.toString())) {
           res[category.name].revenue += tmpProducts[prod.toString()].revenue;
           res[category.name].sales += tmpProducts[prod.toString()].sales;
         }
       });
-      
+
       return res;
     }, {});
     report.categories = Object.values(categories);
-    
+
     report.totalSales = totalSales;
     report.totalRevenue = totalRevenue;
 
@@ -477,4 +486,4 @@ exports.getStatistic = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};

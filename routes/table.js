@@ -4,7 +4,7 @@ const router = express.Router();
 
 const tableController = require("../controllers/table");
 const isAuth = require("../middleware/is-auth");
-const { Table } = require("../models/table");
+const Table = require("../models/table");
 
 router.get("/tables", isAuth, tableController.getTables);
 

@@ -5,12 +5,13 @@ const Receipt = require("../models/receipt");
 const Product = require("../models/product");
 const Table = require("../models/table");
 const { getRole } = require("../util/roles");
-const { receiptStates, tableStates, roleNames} = require("../constants");
+const { receiptStates, tableStates, roleNames } = require("../constants");
 
 exports.getReceipts = async (req, res, next) => {
   try {
     const role = await getRole(req.accountId);
-    if (Object.values(roleNames).includes(role)) {
+    console.log(Object.values(roleNames));
+    if (!Object.values(roleNames).includes(role)) {
       const error = new Error("Chỉ có nội bộ quán mới được xem danh sách hóa đơn");
       error.statusCode = 401;
       return next(error);

@@ -12,4 +12,6 @@ router.put("/categories/:categoryId", isAuth, [
 
 router.delete("/categories/:categoryId", isAuth, categoryController.deleteCategory);
 
+router.post("/categories", isAuth, categoryController.createCategory);
+
 module.exports = router;

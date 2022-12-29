@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const Product = require("../models/product");
-const { Category } = require("../models/category");
+const Category = require("../models/category");
 
 const { getRole } = require("../util/roles");
 const { roleNames, productStates } = require("../constants");
@@ -52,44 +52,46 @@ exports.updateProduct = async (req, res, next) => {
 
   const { category, name, image, price } = req.body;
   const productId = req.params.productId;
-  try {
-    const role = await getRole(req.accountId);
-    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
-      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa sản phẩm");
-      error.statusCode = 401;
-      return next(error);
-    }
+  // try {
 
-    const currentProduct = await Product.findById(productId);
-    if (!currentProduct) {
-      const error = new Error("Sản phẩm không tồn tại");
-      error.statusCode = 401;
-      return next(error);
-    }
+  // } catch (err) {
+  //   const error = new Error(err.message);
+  //   error.statusCode = 500;
+  //   next(error);
+  // }
 
-    if (name !== currentProduct.name) {
-      const existingProduct = await Product.findOne({ name });
-      if (existingProduct) {
-        const error = new Error("Tên sản phẩm đã tồn tại");
-        error.statusCode = 422;
-        return next(error);
-      }
-    }
-
-    currentProduct.category = category;
-    currentProduct.name = name;
-    if (image) {
-      currentProduct.image = image;
-    }
-    currentProduct.price = price;
-    await currentProduct.save();
-
-    res.status(201).json({ message: "Cập nhật sản phẩm thành công" });
-  } catch (err) {
-    const error = new Error(err.message);
-    error.statusCode = 500;
-    next(error);
+  const role = await getRole(req.accountId);
+  if (role != roleNames.OWNER && role != roleNames.MANAGER) {
+    const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa sản phẩm");
+    error.statusCode = 401;
+    return next(error);
   }
+
+  const currentProduct = await Product.findById(productId);
+  if (!currentProduct) {
+    const error = new Error("Sản phẩm không tồn tại");
+    error.statusCode = 401;
+    return next(error);
+  }
+
+  if (name !== currentProduct.name) {
+    const existingProduct = await Product.findOne({ name });
+    if (existingProduct) {
+      const error = new Error("Tên sản phẩm đã tồn tại");
+      error.statusCode = 422;
+      return next(error);
+    }
+  }
+
+  currentProduct.category = category;
+  currentProduct.name = name;
+  if (image) {
+    currentProduct.image = image;
+  }
+  currentProduct.price = price;
+  await currentProduct.save();
+
+  res.status(201).json({ message: "Cập nhật sản phẩm thành công" });
 };
 
 exports.deleteProduct = async (req, res, next) => {

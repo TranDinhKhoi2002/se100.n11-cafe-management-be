@@ -61,11 +61,11 @@ router.put(
 );
 
 router.put(
-  "users/:userId/change-password",
+  "/users/change-password/:userId",
   isAuth,
   [
-    body("newPassword", "Mật khẩu phải chứa ít nhất 5 ký tự")
-      .isLength({ min: 5 })
+    body("newPassword", "Mật khẩu phải chứa ít nhất 6 ký tự")
+      .isLength({ min: 6 })
       .isAlphanumeric()
       .trim()
       .custom((value, { req }) => {

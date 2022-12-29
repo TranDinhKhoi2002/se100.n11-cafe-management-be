@@ -1,6 +1,28 @@
 const { validationResult } = require("express-validator");
+const { roleNames } = require("../constants");
 const Category = require("../models/category");
 const { getRole } = require("../util/roles");
+
+exports.createCategory = async (req, res, next) => {
+  const { categoryName } = req.body;
+  try {
+    const role = await getRole(req.accountId);
+    if (role != roleNames.OWNER && role != roleNames.MANAGER) {
+      const error = new Error("Chỉ có chủ quán hoặc quản lý mới được chỉnh sửa danh mục");
+      error.statusCode = 401;
+      return next(error);
+    }
+
+    const category = new Category({ name: categoryName });
+    await category.save();
+
+    res.status(201).json({ message: "Thêm danh mục thành công", category });
+  } catch (err) {
+    const error = new Error(err.message);
+    error.statusCode = 500;
+    next(error);
+  }
+};
 
 exports.updateCategory = async (req, res, next) => {
   const errors = validationResult(req);
